@@ -3,6 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Meta Pixel Code -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1518928989974988');
+    fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1518928989974988&ev=PageView&noscript=1"/></noscript>
+  <!-- End Meta Pixel Code -->
   <title>การตลาดออนไลน์ร้านอาหารด้วย TikTok — TIDJARUAD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1420,12 +1436,36 @@
       if (c) c.setAttribute('data-slide-number', String(i + 1).padStart(2, '0'));
     });
 
+    const viewedSlides = new Set();
+    const firedMilestones = new Set();
+    function trackSlideProgress() {
+      if (typeof fbq !== 'function') return;
+      const slideNumber = index + 1;
+      const total = slides.length;
+      if (!viewedSlides.has(slideNumber)) {
+        viewedSlides.add(slideNumber);
+        fbq('trackCustom', 'SlideView', {
+          slide_number: slideNumber,
+          total_slides: total,
+          slides_viewed: viewedSlides.size
+        });
+      }
+      const percent = Math.round((slideNumber / total) * 100);
+      [25, 50, 75, 100].forEach(m => {
+        if (percent >= m && !firedMilestones.has(m)) {
+          firedMilestones.add(m);
+          fbq('trackCustom', 'SlideMilestone', { milestone: m + '%', slide_number: slideNumber, total_slides: total });
+        }
+      });
+    }
+
     function showSlide(n) {
       index = Math.max(0, Math.min(slides.length - 1, n));
       slides.forEach((s, i) => s.classList.toggle('active', i === index));
       counter.textContent = (index + 1) + ' / ' + slides.length;
       if (bar) bar.style.width = (((index + 1) / slides.length) * 100) + '%';
       window.location.hash = 'slide-' + (index + 1);
+      trackSlideProgress();
     }
     document.getElementById('prev').addEventListener('click', () => showSlide(index - 1));
     document.getElementById('next').addEventListener('click', () => showSlide(index + 1));
