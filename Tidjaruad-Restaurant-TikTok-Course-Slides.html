@@ -14,7 +14,41 @@
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
     fbq('init', '1518928989974988');
-    fbq('track', 'PageView');
+
+    /* ===== Meta CAPI bridge: ยิงทุก event ผ่าน Pixel + server โดยใช้ event_id เดียวกัน (dedup) ===== */
+    var META_CAPI_ENDPOINT = 'https://restaurant-capi-endpoint.vercel.app/api/capi';
+    function metaEventId() {
+      try { return crypto.randomUUID(); }
+      catch (e) { return 'e' + Date.now() + '-' + Math.random().toString(16).slice(2); }
+    }
+    function metaCookie(name) {
+      var m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+      return m ? m.pop() : '';
+    }
+    window.sendMetaEvent = function (name, custom, isStandard) {
+      var eid = metaEventId();
+      try {
+        if (isStandard) fbq('track', name, custom || {}, { eventID: eid });
+        else fbq('trackCustom', name, custom || {}, { eventID: eid });
+      } catch (e) {}
+      try {
+        fetch(META_CAPI_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
+          body: JSON.stringify({
+            event_name: name,
+            event_id: eid,
+            event_time: Math.floor(Date.now() / 1000),
+            event_source_url: location.href,
+            custom_data: custom || {},
+            fbp: metaCookie('_fbp'),
+            fbc: metaCookie('_fbc')
+          })
+        }).catch(function () {});
+      } catch (e) {}
+    };
+    window.sendMetaEvent('PageView', {}, true);
   </script>
   <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=1518928989974988&ev=PageView&noscript=1"/></noscript>
@@ -1439,12 +1473,12 @@
     const viewedSlides = new Set();
     const firedMilestones = new Set();
     function trackSlideProgress() {
-      if (typeof fbq !== 'function') return;
+      if (typeof window.sendMetaEvent !== 'function') return;
       const slideNumber = index + 1;
       const total = slides.length;
       if (!viewedSlides.has(slideNumber)) {
         viewedSlides.add(slideNumber);
-        fbq('trackCustom', 'SlideView', {
+        window.sendMetaEvent('SlideView', {
           slide_number: slideNumber,
           total_slides: total,
           slides_viewed: viewedSlides.size
@@ -1454,7 +1488,7 @@
       [25, 50, 75, 100].forEach(m => {
         if (percent >= m && !firedMilestones.has(m)) {
           firedMilestones.add(m);
-          fbq('trackCustom', 'SlideMilestone', { milestone: m + '%', slide_number: slideNumber, total_slides: total });
+          window.sendMetaEvent('SlideMilestone', { milestone: m + '%', slide_number: slideNumber, total_slides: total });
         }
       });
     }
