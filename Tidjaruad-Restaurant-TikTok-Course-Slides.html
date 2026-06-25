@@ -1,0 +1,1524 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>การตลาดออนไลน์ร้านอาหารด้วย TikTok — TIDJARUAD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1B1D45; --muted: #5f6680; --paper: #FFFDF8; --panel: #ffffff;
+      --line: #DDE6F5; --navy: #1B1D45; --space: #0A0E1F; --red: #FF3347;
+      --blue: #4F8CFF; --sky: #EAF2FF; --soft: #EEF2F7; --yellow: #FFB23F;
+      --green: #23B26D; --shadow: 0 24px 70px rgba(27, 29, 69, .14);
+      --presenter-controls-h: clamp(64px, 8vh, 86px);
+      --stage-pad-x: clamp(10px, 2vw, 24px);
+      --stage-pad-y: clamp(8px, 1.6vh, 18px);
+      --stage-w: calc(100vw - (var(--stage-pad-x) * 2));
+      --stage-h: calc(100vh - var(--presenter-controls-h) - (var(--stage-pad-y) * 2));
+      --slide-w: min(var(--stage-w), calc(var(--stage-h) * 16 / 9));
+      --slide-h: min(var(--stage-h), calc(var(--stage-w) * 9 / 16));
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Prompt", "Noto Sans Thai", "IBM Plex Sans Thai", "LINE Seed Sans TH", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink); background: #E9EEF7; width: 100vw; height: 100vh;
+      overflow: hidden; display: grid; grid-template-rows: 1fr var(--presenter-controls-h);
+    }
+    .progress { position: fixed; z-index: 30; left: 0; top: 0; height: 5px; width: 100%; background: rgba(27, 29, 69, .08); }
+    .progress span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--red), var(--blue)); transition: width .2s ease; }
+    .deck {
+      width: 100vw; height: calc(100vh - var(--presenter-controls-h));
+      display: grid; place-items: center; padding: var(--stage-pad-y) var(--stage-pad-x);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(79, 140, 255, .12), transparent 24%),
+        radial-gradient(circle at 88% 82%, rgba(255, 51, 71, .10), transparent 24%),
+        #E9EEF7;
+    }
+    .slide {
+      width: var(--slide-w); height: var(--slide-h); aspect-ratio: 16 / 9;
+      display: none; position: relative; overflow: hidden; background: var(--paper);
+      box-shadow: 0 22px 80px rgba(10, 14, 31, .18);
+    }
+    .slide.active { display: flex; align-items: center; justify-content: center; }
+    .slide.dark { background: var(--space); color: #fff; }
+    .slide.dark::before {
+      content: ""; position: absolute; inset: 0; z-index: 0;
+      background:
+        radial-gradient(circle at 78% 22%, rgba(79, 140, 255, .28), transparent 26%),
+        radial-gradient(circle at 24% 86%, rgba(255, 51, 71, .20), transparent 24%),
+        linear-gradient(135deg, #0A0E1F 0%, #151B3F 100%);
+    }
+    .content {
+      position: relative; z-index: 1; width: 100%; height: 100%;
+      padding: clamp(30px, 4vw, 52px) clamp(42px, 5vw, 72px) clamp(40px, 4vw, 58px);
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .content::after {
+      content: "TIDJARUAD GROWTH SYSTEM / " attr(data-slide-number);
+      position: absolute; right: clamp(32px, 4vw, 72px); bottom: clamp(18px, 2vw, 34px);
+      color: rgba(27, 29, 69, .44); font-size: 15.6px; font-weight: 700; letter-spacing: .08em; z-index: 3;
+    }
+    .dark .content::after { color: rgba(255, 255, 255, .44); }
+    .content::before {
+      content: ""; position: absolute; right: clamp(32px, 4vw, 72px); top: clamp(24px, 3vw, 46px);
+      width: 132px; height: 42px;
+      background: url("Tidjaruad Branded Asset/Logo Tidjaruad2023/logo-tidjaruadนอน.png") right center / contain no-repeat;
+      opacity: .88; z-index: 3; pointer-events: none;
+    }
+    .dark .content::before { background-image: url("Tidjaruad Branded Asset/Logo Tidjaruad2023/logo-tidjaruad-ขาว.png"); opacity: .92; }
+
+    .brand-chip {
+      display: inline-flex; width: fit-content; gap: 10px; padding: 9px 14px;
+      border: 1px solid rgba(79, 140, 255, .28); border-radius: 999px;
+      background: rgba(255, 255, 255, .72); color: var(--navy); font-size: 18.2px; font-weight: 800;
+      letter-spacing: .04em; box-shadow: 0 12px 30px rgba(27, 29, 69, .08);
+    }
+    .dark .brand-chip { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.18); color: #fff; }
+    .brand-chip::before { content: ""; width: 10px; height: 10px; border-radius: 999px; background: linear-gradient(135deg, var(--red), var(--blue)); }
+
+    .eyebrow {
+      display: flex; align-items: center; gap: 10px; color: var(--muted);
+      font-size: 22.1px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em;
+    }
+    .dark .eyebrow { color: rgba(255, 255, 255, .74); }
+    .eyebrow::before { content: ""; width: 28px; height: 3px; background: linear-gradient(90deg, var(--red), var(--yellow)); border-radius: 2px; }
+
+    h1 { max-width: 900px; font-size: clamp(52.0px, 5.2vw, 72.8px); line-height: 1.08; font-weight: 900; color: var(--navy); text-wrap: pretty; word-break: normal; overflow-wrap: normal; line-break: normal; margin: 0; }
+    h2 { max-width: 980px; font-size: clamp(37.7px, 3.9vw, 50.7px); line-height: 1.15; font-weight: 900; color: var(--navy); text-wrap: pretty; word-break: normal; overflow-wrap: normal; line-break: normal; margin: 0; }
+    .dark h1, .dark h2, .dark h3 { color: #fff; }
+    h3 { font-size: 29.9px; line-height: 1.2; font-weight: 800; margin: 0; }
+    p, li { font-size: 23.4px; line-height: 1.4; font-weight: 400; margin: 0; }
+    .lead { max-width: 920px; font-size: clamp(27.3px, 2.6vw, 33.8px); line-height: 1.34; color: #262831; font-weight: 500; }
+    .dark .lead { color: rgba(255, 255, 255, .88); }
+
+    /* ป้องกันคำสำคัญฉีกบรรทัด (ตัดคำไทยผิดจุด) */
+    .highlight, .kw, .kw-red, .kw-yellow, .hl-bold, .hl-hero, .hl-underline,
+    .hero-quote .accent, .divider-accent, .winners-accent, .nb { white-space: nowrap; }
+    .spk-list { gap: 8px !important; }
+    .spk-list li { font-size: clamp(15px, 1.45vw, 18.5px) !important; line-height: 1.3; }
+    .spk-list li::before { font-size: .9em; }
+    .highlight { color: var(--blue); font-weight: 800; }
+    .dark .highlight { color: var(--yellow); }
+    .kw { color: var(--blue); font-weight: 800; }
+    .kw-red { color: var(--red); font-weight: 800; }
+    .kw-yellow { color: #B26A00; font-weight: 800; }
+    .dark .kw-yellow { color: var(--yellow); }
+    .hl-bold { font-weight: 900; }
+    .hl-hero { display: inline-block; padding: 2px 14px 6px; border-radius: 12px; background: var(--yellow); color: #1B1D45; font-weight: 900; }
+    .hl-underline { position: relative; }
+    .hl-underline::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--red), var(--yellow)); }
+
+    .grid { display: grid; gap: 14px; width: 100%; }
+    .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .card { min-height: 120px; border-radius: 18px; padding: 18px 20px; position: relative; overflow: hidden;
+      border: 1px solid rgba(221, 230, 245, .96); background: rgba(255, 255, 255, .9); box-shadow: var(--shadow); }
+    .card::before { content: ""; position: absolute; inset: 0 0 auto; height: 6px; background: linear-gradient(90deg, var(--blue), var(--red)); }
+    .card .ic { width: 46px; height: 46px; border-radius: 14px; margin-bottom: 8px; display: grid; place-items: center; background: rgba(79,140,255,.12); color: var(--blue); }
+    .card.accent-red .ic { background: rgba(255,51,71,.12); color: var(--red); }
+    .card.accent-yellow .ic { background: rgba(255,178,63,.18); color: #B26A00; }
+    .card.accent-green .ic { background: rgba(35,178,109,.14); color: var(--green); }
+    .dark .card .ic { background: rgba(255,255,255,.12); color: #fff; }
+    .card .card-illo { width: 86px; height: 58px; border-radius: 16px; margin-bottom: 10px; display: block; color: var(--blue); overflow: hidden; background: linear-gradient(145deg, rgba(79,140,255,.14), rgba(255,255,255,.72)); }
+    .card.accent-red .card-illo { color: var(--red); background: linear-gradient(145deg, rgba(255,51,71,.14), rgba(255,255,255,.72)); }
+    .card.accent-yellow .card-illo { color: #B26A00; background: linear-gradient(145deg, rgba(255,178,63,.22), rgba(255,255,255,.72)); }
+    .card.accent-green .card-illo { color: var(--green); background: linear-gradient(145deg, rgba(35,178,109,.18), rgba(255,255,255,.72)); }
+    .dark .card .card-illo { color: #fff; background: linear-gradient(145deg, rgba(255,255,255,.18), rgba(255,255,255,.06)); }
+    .mini-illo-svg { width: 100%; height: 100%; display: block; }
+    .mini-illo-svg .mini-card { fill: rgba(255,255,255,.7); }
+    .mini-illo-svg .mini-soft { fill: currentColor; opacity: .16; }
+    .mini-illo-svg .mini-accent { fill: currentColor; opacity: .82; }
+    .mini-illo-svg .mini-line { stroke: currentColor; stroke-width: 4.2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .mini-illo-svg .mini-icon { stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .mini-illo-svg .mini-navy { stroke: var(--navy); stroke-width: 3.8; stroke-linecap: round; stroke-linejoin: round; fill: none; opacity: .72; }
+    .icon-svg { width: 1em; height: 1em; display: block; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .ic .icon-svg { width: 29px; height: 29px; }
+    .card strong { display: block; margin-bottom: 6px; font-size: 27.3px; line-height: 1.2; font-weight: 900; color: var(--navy); }
+    .card p, .card li { font-size: 20.8px; font-weight: 400; color: var(--muted); }
+    .dark .card { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.15); }
+    .dark .card strong { color: #fff; }
+    .dark .card p, .dark .card li { color: rgba(255,255,255,.76); }
+    .card.accent-red::before { background: linear-gradient(90deg, var(--red), #FF6B7E); }
+    .card.accent-yellow::before { background: linear-gradient(90deg, var(--yellow), #FFA727); }
+    .card.accent-green::before { background: linear-gradient(90deg, var(--green), #45D68C); }
+    .card.accent-blue::before { background: linear-gradient(90deg, var(--blue), #7BA9FF); }
+
+    .formula { margin-top: auto; padding: 14px 22px; border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255, 178, 63, .14), rgba(255, 51, 71, .08));
+      border: 1px solid rgba(255, 178, 63, .42); color: var(--navy); font-size: 22.1px; font-weight: 700; }
+    .dark .formula { color: #fff; }
+    .formula > [data-icon] { display: inline-flex; width: 1.15em; height: 1.15em; margin-right: 8px; color: var(--red); vertical-align: -.2em; }
+    .formula > [data-icon] .icon-svg { width: 100%; height: 100%; stroke-width: 2.5; }
+
+    /* Cover */
+    .slide.cover .content { flex-direction: row; align-items: center; gap: clamp(20px, 2.4vw, 40px); }
+    .slide.cover .cover-text { flex: 1 1 64%; max-width: 64%; display: flex; flex-direction: column; gap: 16px; }
+    .slide.cover .brand-visual.hero { position: relative; width: clamp(220px, 26vw, 340px); max-height: 80%; object-fit: contain; }
+    .slide.cover h1 .hl-hero { padding: 4px 18px 8px; border-radius: 14px; }
+    .metric-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px; }
+    .metric { padding: 12px 18px; border-radius: 14px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); min-width: 130px; }
+    .metric b { display: block; font-size: 33.8px; font-weight: 900; color: #fff; }
+    .metric span { font-size: 18.2px; color: rgba(255,255,255,.78); font-weight: 600; }
+
+    /* Quote */
+    .hero-quote { font-size: clamp(52.0px, 5.46vw, 78.0px); line-height: 1.1; font-weight: 900; color: #fff; text-wrap: pretty; word-break: normal; overflow-wrap: normal; line-break: normal; }
+    .hero-quote .accent { color: var(--yellow); }
+    .quote-sub { font-size: clamp(26.0px, 2.47vw, 33.8px); color: rgba(255,255,255,.86); font-weight: 600; max-width: 880px; }
+    .quote-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+    .quote-pill { border: 1px solid rgba(255,255,255,.18); border-radius: 18px; padding: 12px 16px; color: #fff; background: rgba(255,255,255,.10); font-size: 20.8px; font-weight: 800; }
+    .quote-slide .brand-visual.target { position: absolute; right: clamp(30px,4vw,70px); bottom: clamp(40px,5vw,70px); width: clamp(150px,18vw,240px); }
+
+    /* Section Divider */
+    .slide.divider-slide::before {
+      content:""; position:absolute; inset:0; z-index:0;
+      background:
+        radial-gradient(circle at 82% 50%, rgba(255, 51, 71, .26), transparent 32%),
+        radial-gradient(circle at 16% 90%, rgba(79, 140, 255, .22), transparent 30%),
+        linear-gradient(135deg, #0A0E1F 0%, #181E45 100%);
+    }
+    .slide.divider-slide .content { flex-direction: row; gap: clamp(32px, 4vw, 64px); align-items: center; }
+    .divider-visual { flex: 0 0 38%; position: relative; display: flex; align-items: center; justify-content: center; min-height: 60%; }
+    .divider-num { font-size: clamp(260.0px, 28.6vw, 442.0px); font-weight: 900; color: transparent; -webkit-text-stroke: 2.5px rgba(255, 255, 255, .85); position: relative; line-height: 1; }
+    .divider-num::after { content: attr(data-num); position: absolute; inset: 0; -webkit-text-stroke: 2.5px var(--red); transform: translate(8px, 8px); opacity: .55; z-index: -1; }
+    .divider-mascot { position: absolute; right: -4%; bottom: -6%; width: 54%; max-width: 250px; }
+    .divider-body { flex: 1 1 auto; display: flex; flex-direction: column; gap: 14px; }
+    .divider-label { display: flex; align-items: center; gap: 12px; }
+    .divider-step { padding: 6px 12px; border-radius: 8px; background: var(--red); color: #fff; font-size: 16.9px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+    .divider-eyebrow { color: rgba(255,255,255,.7); font-weight: 800; letter-spacing: .06em; font-size: 18.2px; text-transform: uppercase; }
+    .divider-title { font-size: clamp(52.0px, 5.46vw, 78.0px); color: #fff; font-weight: 900; line-height: 1.1; }
+    .divider-title .divider-accent { color: var(--yellow); position: relative; }
+    .divider-sub { font-size: clamp(20.8px, 1.82vw, 24.7px); color: rgba(255,255,255,.82); max-width: 560px; }
+    .divider-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+    .chip { padding: 8px 16px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.20); color: #fff; font-size: 17.6px; font-weight: 700; }
+    .chip.chip-hero { background: linear-gradient(135deg, var(--red), #FF6B7E); border-color: transparent; }
+
+    /* Setup Grid */
+    .setup-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; width: 100%; }
+    .setup-grid.setup-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .setup-step { padding: 16px; border-radius: 18px; background: #fff; border: 1px solid var(--line); box-shadow: 0 18px 38px rgba(27,29,69,.1); position: relative; overflow: hidden; display: flex; flex-direction: column; }
+    .setup-step::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 5px; background: linear-gradient(90deg, var(--red), var(--yellow)); }
+    .setup-mock { aspect-ratio: 16/8; border-radius: 10px; background: linear-gradient(160deg, #EEF3FC, #DCE6F7); border: 1px solid var(--line); display: grid; place-items: center; font-size: 72.8px; margin-bottom: 12px; color: var(--blue); overflow: hidden; }
+    .setup-mock .icon-svg { width: 66px; height: 66px; stroke-width: 1.9; }
+    .setup-mock[data-illo] { padding: 8px; }
+    .setup-mock.photo-real { padding: 0; background: #0A0E1F; color: inherit; }
+    .setup-mock.photo-real img { width: 100%; height: 100%; object-fit: cover; object-position: center center; display: block; }
+    .setup-mock.photo-real.photo-left img { object-position: 34% center; }
+    .setup-mock.photo-real.photo-right img { object-position: 66% center; }
+    .setup-mock.photo-real.photo-low img { object-position: center 68%; }
+    .setup-mock.photo-real.photo-top img { object-position: center top; }
+    .illo-svg { width: 100%; height: 100%; display: block; }
+    .illo-bg { fill: #fff; opacity: .62; }
+    .illo-blue { fill: var(--blue); }
+    .illo-blue-soft { fill: rgba(79,140,255,.18); }
+    .illo-red { fill: var(--red); }
+    .illo-red-soft { fill: rgba(255,51,71,.16); }
+    .illo-yellow { fill: var(--yellow); }
+    .illo-yellow-soft { fill: rgba(255,178,63,.24); }
+    .illo-green { fill: var(--green); }
+    .illo-green-soft { fill: rgba(35,178,109,.18); }
+    .illo-navy { fill: var(--navy); }
+    .illo-line { stroke: var(--navy); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; fill: none; opacity: .9; }
+    .illo-line-blue { stroke: var(--blue); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .illo-line-red { stroke: var(--red); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .illo-line-green { stroke: var(--green); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .illo-line-yellow { stroke: #B26A00; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+
+    /* CapCut editor mockup */
+    .capcut { width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 22px 50px rgba(27,29,69,.16); background: #15171f; }
+    .cc-bar { display: flex; align-items: center; gap: 6px; padding: 9px 12px; background: #1f2330; }
+    .cc-dot { width: 10px; height: 10px; border-radius: 999px; }
+    .cc-bar b { color: #fff; font-size: 16.9px; font-weight: 800; margin-left: 8px; letter-spacing: .04em; }
+    .cc-bar .cc-spacer { flex: 1; }
+    .cc-bar .cc-export { background: linear-gradient(135deg, var(--red), #FF6B7E); color: #fff; font-size: 14.3px; font-weight: 800; padding: 5px 12px; border-radius: 8px; }
+    .cc-preview { aspect-ratio: 16/6; background: radial-gradient(circle at 50% 40%, #2b3040, #15171f); display: grid; place-items: center; position: relative; }
+    .cc-foodtile { width: 64px; height: 64px; border-radius: 14px; background: linear-gradient(135deg, var(--yellow), #FFA727); display: grid; place-items: center; color: #1B1D45; }
+    .cc-foodtile .icon-svg { width: 42px; height: 42px; }
+    .cc-caption { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.55); color: #fff; font-size: 14.3px; font-weight: 800; padding: 4px 12px; border-radius: 6px; white-space: nowrap; }
+    .cc-hooktag { position: absolute; top: 12px; left: 14px; background: var(--red); color: #fff; font-size: 14.3px; font-weight: 900; padding: 4px 10px; border-radius: 6px; }
+    .cc-timeline { padding: 10px 12px 14px; background: #1b1e29; display: flex; flex-direction: column; gap: 7px; }
+    .cc-track { display: flex; align-items: center; gap: 6px; }
+    .cc-tlabel { width: 26px; color: #8b92a8; font-size: 16.9px; text-align: center; flex: 0 0 auto; display: grid; place-items: center; }
+    .cc-tlabel .icon-svg { width: 17px; height: 17px; }
+    .cc-clip { height: 22px; border-radius: 5px; flex: 1; }
+    .cc-clip.v { background: linear-gradient(90deg,#3a4258,#2f3650); border: 1px solid #4a5478; }
+    .cc-clip.t { background: linear-gradient(90deg, rgba(255,178,63,.5), rgba(255,178,63,.25)); border: 1px solid var(--yellow); flex: 0 0 58%; }
+    .cc-clip.a { background: linear-gradient(90deg, rgba(79,140,255,.45), rgba(79,140,255,.2)); border: 1px solid var(--blue); }
+    .cc-playhead { width: 2px; background: var(--red); align-self: stretch; }
+    .setup-label { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .step-pill { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; background: linear-gradient(135deg, var(--navy), var(--blue)); color: #fff; font-weight: 900; flex: 0 0 auto; }
+    .setup-step h3 { font-size: 23.4px; font-weight: 900; color: var(--navy); }
+    .setup-step p { font-size: 18.9px; line-height: 1.45; color: var(--muted); margin-top: 4px; }
+    .setup-step p .kw { color: var(--blue); font-weight: 800; }
+
+    /* Rule Grid */
+    .rules-topbar { display: flex; align-items: center; justify-content: flex-start; gap: 14px; flex-wrap: wrap; padding-right: 150px; }
+    .rules-slide .rule-grid { flex: 1 1 auto; align-content: center; }
+    .setup-grid { flex: 1 1 auto; align-content: center; }
+    .setup-grid.cal { gap: 14px; }
+    .setup-grid.cal .setup-step { padding: 12px 16px 13px; }
+    .setup-grid.cal .setup-mock { aspect-ratio: auto; height: 58px; font-size: 34px; margin-bottom: 8px; }
+    .setup-grid.cal .setup-mock.photo-real { height: 108px; margin-bottom: 7px; }
+    .setup-grid.cal .setup-label { margin-bottom: 2px; }
+    .setup-grid.cal .setup-step h3 { font-size: 22.1px; }
+    .setup-grid.cal .setup-step p { font-size: 17.6px; line-height: 1.28; }
+    .setup-grid.compact-mock .setup-mock { aspect-ratio: auto; height: 108px; font-size: 44px; margin-bottom: 10px; }
+    .setup-grid.workshop-mock .setup-step { padding: 14px 16px 15px; }
+    .setup-grid.workshop-mock .setup-mock { aspect-ratio: auto; height: 138px; margin-bottom: 11px; }
+    .setup-grid.workshop-mock .setup-step p { font-size: 18.3px; line-height: 1.38; }
+    .setup-grid.capcut-workflow .setup-mock { height: 166px; border-radius: 13px; background: #121722; border-color: rgba(79,140,255,.28); }
+    .capcut-shot { width: 100%; height: 100%; padding: 10px; background: linear-gradient(135deg, #151A24, #0B0F17); color: #E8ECF6; display: grid; grid-template-columns: 48px 1fr 72px; grid-template-rows: 26px 1fr 44px; gap: 8px; font-family: Inter, Arial, sans-serif; }
+    .capcut-top { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 900; color: #AAB4C7; }
+    .capcut-brand { color: #fff; font-size: 12px; letter-spacing: .02em; }
+    .capcut-export { margin-left: auto; background: var(--blue); color: #fff; padding: 4px 8px; border-radius: 999px; font-size: 9px; }
+    .capcut-rail { grid-row: 2 / 4; display: grid; gap: 5px; align-content: start; }
+    .capcut-tab { padding: 4px 5px; border-radius: 7px; background: rgba(255,255,255,.06); color: #B7C0D2; font-size: 8px; font-weight: 800; line-height: 1; }
+    .capcut-tab.on { background: rgba(79,140,255,.27); color: #fff; outline: 1px solid rgba(79,140,255,.42); }
+    .capcut-stage { position: relative; display: grid; place-items: center; background: #0A0E15; border-radius: 10px; overflow: hidden; }
+    .capcut-phone { width: 56px; height: 100px; border: 4px solid #30394B; border-radius: 14px; background: linear-gradient(160deg, #7C2B1E, #F7BD54 46%, #2F7A48); position: relative; box-shadow: 0 10px 24px rgba(0,0,0,.35); }
+    .capcut-phone::before { content: ""; position: absolute; left: 10px; right: 10px; bottom: 18px; height: 24px; border-radius: 50%; background: radial-gradient(circle, #F8D67C 0 28%, #D8562E 29% 55%, #4B2B20 56% 100%); }
+    .capcut-phone::after { content: ""; position: absolute; left: 11px; right: 11px; bottom: 8px; height: 8px; border-radius: 999px; background: rgba(0,0,0,.52); }
+    .capcut-panel { display: grid; align-content: start; gap: 6px; }
+    .capcut-chip { padding: 5px 6px; border-radius: 8px; background: rgba(255,255,255,.08); color: #D8DEEA; font-size: 8px; font-weight: 900; line-height: 1; }
+    .capcut-chip.hot { background: rgba(255,174,37,.24); outline: 1px solid rgba(255,174,37,.5); color: #fff; }
+    .capcut-timeline { grid-column: 2 / 4; display: grid; gap: 4px; align-content: center; }
+    .capcut-tools { display: flex; gap: 5px; }
+    .capcut-tool { padding: 4px 6px; border-radius: 7px; background: rgba(255,255,255,.08); font-size: 8px; color: #C9D2E3; font-weight: 900; }
+    .capcut-tool.on { background: rgba(79,140,255,.3); color: #fff; }
+    .capcut-track { display: flex; gap: 4px; }
+    .capcut-clip { height: 16px; border-radius: 5px; background: linear-gradient(90deg, #FFB84D, #D94A2D); border: 1px solid rgba(255,255,255,.16); }
+    .capcut-clip:nth-child(1) { width: 58px; } .capcut-clip:nth-child(2) { width: 44px; } .capcut-clip:nth-child(3) { width: 66px; }
+    .capcut-audio { height: 10px; border-radius: 999px; background: repeating-linear-gradient(90deg, rgba(79,140,255,.52), rgba(79,140,255,.52) 5px, rgba(79,140,255,.16) 5px, rgba(79,140,255,.16) 10px); }
+    .capcut-call { position: absolute; left: 8px; top: 8px; padding: 4px 6px; border-radius: 999px; background: #fff; color: var(--navy); font-size: 8px; font-weight: 900; box-shadow: 0 6px 14px rgba(0,0,0,.25); }
+    .setup-grid.calendar-cards { gap: 16px; }
+    .setup-grid.calendar-cards .setup-step { display: grid; grid-template-columns: 45% 1fr; grid-template-rows: auto auto; column-gap: 14px; row-gap: 2px; align-items: center; min-height: 155px; padding: 14px 16px; }
+    .setup-grid.calendar-cards .setup-mock.photo-real { grid-row: 1 / span 2; height: 126px; margin: 0; border-radius: 12px; }
+    .setup-grid.calendar-cards .setup-label { align-self: end; margin: 0; }
+    .setup-grid.calendar-cards .setup-step p { align-self: start; margin: 0; font-size: 18.2px; line-height: 1.3; }
+    .rules-important { padding: 5px 14px; border-radius: 999px; background: linear-gradient(135deg, var(--red), #FF6B7E); color: #fff; font-size: 16.9px; font-weight: 900; animation: pulse-imp 1.8s ease-in-out infinite; display: inline-flex; align-items: center; gap: 7px; }
+    @keyframes pulse-imp { 0%,100% { box-shadow: 0 10px 22px rgba(255,51,71,.28); } 50% { box-shadow: 0 14px 28px rgba(255,51,71,.45); } }
+    .rule-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; }
+    .rule-card { position: relative; padding: 14px 16px 14px 54px; border-radius: 16px; background: #fff; border: 1px solid var(--line); box-shadow: 0 14px 30px rgba(27,29,69,.08); }
+    .rule-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: linear-gradient(180deg, var(--red), #FF6B7E); }
+    .rule-card.rule-card-ok::before { background: linear-gradient(180deg, var(--green), #45D68C); }
+    .rule-card.rule-card-warn::before { background: linear-gradient(180deg, var(--yellow), #FFA727); }
+    .rule-icon { position: absolute; left: 12px; top: 13px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; background: rgba(255,51,71,.12); color: var(--red); font-size: 23.4px; font-weight: 900; }
+    .rule-icon .icon-svg { width: 20px; height: 20px; stroke-width: 2.8; }
+    .rule-card-ok .rule-icon { background: rgba(35,178,109,.14); color: var(--green); }
+    .rule-card strong { display: block; font-size: 21.4px; font-weight: 900; color: var(--navy); margin-bottom: 3px; }
+    .rule-card p { font-size: 17.6px; line-height: 1.4; color: var(--muted); }
+    .rule-disclaimer { margin-top: 8px; padding: 6px 10px; border-radius: 8px; background: rgba(255,178,63,.14); border-left: 3px solid var(--yellow); color: #B26A00; font-size: 15.0px; font-weight: 700; }
+    .rule-formula { margin-top: 4px; padding: 12px 20px; border-radius: 16px; background: linear-gradient(135deg, rgba(35,178,109,.12), rgba(35,178,109,.06)); border: 1px solid rgba(35,178,109,.32); display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .rule-formula-head { color: #0D7A53; font-weight: 900; font-size: 20.2px; display: inline-flex; align-items: center; gap: 7px; }
+    .rf-check { padding: 6px 12px; border-radius: 999px; background: rgba(35,178,109,.16); color: #0D7A53; font-size: 16.2px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; }
+    .rules-important .icon-svg, .rule-formula-head .icon-svg, .rf-check .icon-svg { width: 1.05em; height: 1.05em; flex: 0 0 auto; }
+
+    /* Step shot */
+    .step-shot-wrap { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 22px; align-items: center; width: 100%; flex: 1; }
+    .step-shot-panel { width: 100%; border-radius: 16px; background: linear-gradient(160deg,#EEF3FC,#DCE6F7); border: 1px solid var(--line); box-shadow: 0 22px 50px rgba(27,29,69,.14); padding: 26px; min-height: 280px; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+    .radius-ring { width: 150px; height: 150px; border-radius: 999px; border: 3px dashed var(--blue); background: radial-gradient(circle, rgba(79,140,255,.18), transparent 70%); display: grid; place-items: center; margin: 0 auto; position: relative; }
+    .radius-ring .pin { font-size: 49.4px; }
+    .radius-ring::after { content:"5 กม."; position:absolute; bottom:-8px; left:50%; transform:translateX(-50%); background:var(--blue); color:#fff; font-size:15.6px; font-weight:900; padding:3px 10px; border-radius:999px; }
+    .step-shot-side { display: flex; flex-direction: column; gap: 14px; }
+    .step-shot-num { width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, var(--red), var(--yellow)); color: #fff; font-weight: 900; font-size: 31.2px; display: inline-flex; align-items: center; justify-content: center; }
+    .step-shot-title { font-size: clamp(27.3px, 2.47vw, 35.1px); font-weight: 900; color: var(--navy); }
+    .step-shot-desc { font-size: clamp(19.5px, 1.69vw, 23.4px); color: var(--muted); line-height: 1.5; }
+    .step-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .step-chip { padding: 7px 14px; border-radius: 999px; background: rgba(79,140,255,.08); border: 1px solid rgba(79,140,255,.22); color: var(--navy); font-size: 17.6px; font-weight: 800; }
+    .step-chip.step-chip-hero { background: linear-gradient(135deg, var(--red), #FF6B7E); border-color: transparent; color: #fff; }
+
+    /* Journey flow */
+    .journey-flow { display: grid; grid-template-columns: 1fr 30px 1fr 30px 1fr 30px 1fr; gap: 8px; align-items: stretch; padding: 16px; border-radius: 16px; background: linear-gradient(135deg, rgba(79,140,255,.08), rgba(255,51,71,.06)); border: 1px dashed rgba(79,140,255,.35); width: 100%; }
+    .journey-step { display: flex; flex-direction: column; gap: 8px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+    .journey-num { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, var(--navy), var(--blue)); color: #fff; font-weight: 900; display: grid; place-items: center; }
+    .journey-step-hero .journey-num { background: linear-gradient(135deg, var(--red), var(--yellow)); }
+    .journey-step b { font-size: 20.8px; color: var(--navy); font-weight: 900; }
+    .journey-step span { font-size: 16.9px; color: var(--muted); }
+    .journey-arrow { display: grid; place-items: center; font-size: 31.2px; color: var(--blue); font-weight: 900; }
+
+    /* Key takeaway */
+    .kt-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; width: 100%; }
+    .kt-card { padding: 20px; border-radius: 18px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 8px; }
+    .kt-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 6px; }
+    .kt-card-1::before { background: linear-gradient(90deg, var(--red), #FF6B7E); }
+    .kt-card-2::before { background: linear-gradient(90deg, var(--yellow), #FFA727); }
+    .kt-card-3::before { background: linear-gradient(90deg, var(--green), #45D68C); }
+    .kt-num { font-size: 44.2px; font-weight: 900; color: rgba(255,255,255,.32); line-height: 1; }
+    .kt-card strong { font-size: 26.0px; font-weight: 900; color: #fff; }
+    .kt-card p { font-size: 19.5px; color: rgba(255,255,255,.8); line-height: 1.45; }
+    .kt-formula { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px; padding: 14px 20px; border-radius: 14px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); }
+    .kt-fchip { padding: 8px 16px; border-radius: 999px; background: rgba(255,255,255,.1); color: #fff; font-weight: 800; font-size: 19.5px; }
+    .kt-fchip-hero { background: linear-gradient(135deg, var(--yellow), #FFA727); color: #1B1D45; }
+    .kt-arrow { font-size: 28.6px; color: var(--yellow); font-weight: 900; }
+
+    /* CTA close */
+    .cta-box { margin-top: 6px; padding: 22px 26px; border-radius: 20px; background: linear-gradient(135deg, var(--red), #FF6B7E); color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 20px; box-shadow: 0 22px 50px rgba(255,51,71,.34); }
+    .cta-box .cta-txt b { font-size: 33.8px; font-weight: 900; display: block; }
+    .cta-box .cta-txt span { font-size: 20.8px; opacity: .92; }
+    .cta-badge { background: #fff; color: var(--red); padding: 14px 22px; border-radius: 14px; font-weight: 900; font-size: 23.4px; white-space: nowrap; }
+
+    .lead-list { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+    .lead-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 23.4px; color: var(--ink); }
+    .lead-list li::before { content: "▸"; color: var(--red); font-weight: 900; }
+    .dark .lead-list li { color: rgba(255,255,255,.9); }
+
+    /* Controls */
+    .controls { display: flex; gap: 12px; align-items: center; justify-content: center; padding: 12px 18px; background: linear-gradient(180deg, #FFFDF8, #F7F3EA); border-top: 1px solid #EEE3D0; }
+    .controls button { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(180deg, #fff, #F4F0E5); border: 1px solid #DDE6F5; color: var(--navy); font-size: 28.6px; font-weight: 900; cursor: pointer; }
+    .counter { min-width: 90px; text-align: center; color: var(--navy); font-weight: 800; font-size: 20.8px; }
+    .tool-button svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    button.is-active { background: linear-gradient(135deg, var(--red), var(--blue)); color: #fff; }
+    .presentation-pointer { position: fixed; z-index: 70; width: 34px; height: 34px; border: 3px solid #FF3347; border-radius: 999px; background: rgba(255, 51, 71, .18); box-shadow: 0 0 0 8px rgba(255, 51, 71, .10), 0 0 24px rgba(255, 51, 71, .45); pointer-events: none; opacity: 0; transform: translate(-50%, -50%); transition: opacity .12s ease; }
+    body.pointer-on .presentation-pointer.visible { opacity: 1; }
+
+    @media (max-width: 768px) {
+      .content { padding: 28px 18px 36px; }
+      h1 { font-size: 49.4px; } h2 { font-size: 37.7px; } .lead { font-size: 27.3px; }
+      .two, .three, .four, .setup-grid, .rule-grid, .kt-grid, .step-shot-wrap { grid-template-columns: 1fr; }
+      .journey-flow { grid-template-columns: 1fr; } .journey-arrow { transform: rotate(90deg); }
+      .slide.cover .content, .slide.divider-slide .content { flex-direction: column; }
+    }
+
+    /* ===== ตัวอย่างคลิปวีดีโอ (gallery) ===== */
+    .vidgrid { display: flex; gap: 26px; width: 100%; flex: 1; align-items: center; justify-content: center; }
+    .vidcard { flex: 0 1 196px; max-width: 196px; display: flex; flex-direction: column; gap: 8px; }
+    .vidcard .vwrap { position: relative; width: 100%; aspect-ratio: 9/16; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: #0A0E1F; }
+    .vidcard video, .vidcard .vwrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .vidcard .vlabel { text-align: center; }
+    .vidcard .vlabel b { display: block; font-size: 15px; color: var(--navy); font-weight: 900; }
+    .vidcard .vlabel span { font-size: 12.5px; color: var(--muted); }
+    .vidcard .vtag { position: absolute; top: 8px; left: 8px; z-index: 2; font-size: 11px; font-weight: 900; color: #fff; padding: 3px 9px; border-radius: 999px; }
+    .vplay { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; z-index: 1; }
+    .vplay svg { width: 44px; height: 44px; filter: drop-shadow(0 4px 10px rgba(0,0,0,.55)); opacity: .96; }
+    .vidcard .vwrap { cursor: pointer; }
+    .vidcard video { pointer-events: none; }
+
+    /* Lightbox เต็มจอ */
+    .vlightbox { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.92); display: none; align-items: center; justify-content: center; }
+    .vlightbox.open { display: flex; }
+    .vlightbox video, .vlightbox img { max-width: 94vw; max-height: 92vh; border-radius: 12px; box-shadow: 0 24px 70px rgba(0,0,0,.6); background:#000; }
+    .vlb-close { position: absolute; top: 18px; right: 24px; width: 50px; height: 50px; border-radius: 999px; background: rgba(255,255,255,.16); color: #fff; font-size: 30px; font-weight: 900; line-height: 1; border: none; cursor: pointer; display: grid; place-items: center; }
+    .vlb-close:hover { background: rgba(255,255,255,.28); }
+    .vlb-hint { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.7); font-size: 14px; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+  <main class="deck">
+
+    <!-- 1 COVER -->
+    <section class="slide active dark cover">
+      <div class="content">
+        <div class="cover-text">
+          <div class="brand-chip">TIDJARUAD PERFORMANCE TRAINING</div>
+          <div class="eyebrow">Workshop · 45 นาที สำหรับเจ้าของร้านอาหาร</div>
+          <h1>ปั้นร้านอาหารให้<span class="hl-underline">คนแห่มา</span><br>ด้วย <span class="hl-hero">TikTok</span></h1>
+          <p class="lead"><span class="hl-bold">ทำคลิปให้ปัง · ยิงแอดเป็น · ดึงคนเข้าร้านจริง</span> — เริ่มจากศูนย์ ทำตามได้ทันที</p>
+          <div class="metric-row">
+            <div class="metric"><b>3 วิ</b><span>เวลาที่ตัดสินว่าคนหยุดดู</span></div>
+            <div class="metric"><b>5 กม.</b><span>รัศมียิงแอดหาคนใกล้ร้าน</span></div>
+            <div class="metric"><b>30 วัน</b><span>แผนลงมือทำหลังคอร์ส</span></div>
+          </div>
+        </div>
+        <img class="brand-visual hero" src="Tidjaruad Branded Asset/tidjaruad-brand-assets/01-mascot-hero.png" alt="">
+      </div>
+    </section>
+
+    <!-- 1B SPEAKER INTRO -->
+    <section class="slide">
+      <div class="content spk" style="flex-direction:row; align-items:center; gap:clamp(24px,3vw,48px);">
+        <div style="flex:0 0 32%; display:flex; flex-direction:column; align-items:center; gap:12px;">
+          <div style="width:clamp(170px,18vw,228px); aspect-ratio:1; border-radius:999px; box-shadow:0 18px 40px rgba(27,29,69,.26); border:5px solid #fff; overflow:hidden; background:#EEF3FC;">
+            <img src="speaker-chanchai-sq.jpg" alt="ชาญชัย แทนนิ่ม" style="width:100%; height:100%; object-fit:cover; object-position:center top;">
+          </div>
+          <div style="display:flex; gap:7px;"><span class="step-chip step-chip-hero">TikTok Ads</span><span class="step-chip">คอนเทนต์</span><span class="step-chip">ร้านอาหาร</span></div>
+        </div>
+        <div style="flex:1 1 auto; display:flex; flex-direction:column; gap:10px;">
+          <div class="brand-chip">แนะนำตัว</div>
+          <h1 style="font-size:clamp(32px,3.2vw,44px);">ชาญชัย <span class="highlight">แทนนิ่ม</span></h1>
+          <p class="lead" style="margin-top:-2px; font-size:clamp(17px,1.55vw,21px);"><span class="nb">CEO บริษัท</span> <span class="highlight">ติดจรวด จำกัด</span> · <span class="nb">TikTok Marketing Expert</span></p>
+          <ul class="lead-list spk-list">
+            <li><span class="nb"><b>CEO</b> บริษัท ติดจรวด จำกัด</span> <span class="nb">(TIDJARUAD)</span> — <span class="nb">เอเจนซีการตลาดออนไลน์</span></li>
+            <li><span class="nb"><b>อาจารย์พิเศษ</b></span> <span class="nb">มหาวิทยาลัยชั้นนำ</span> — <span class="nb">ด้านการตลาดดิจิทัล</span></li>
+            <li><span class="nb"><b>TikTok Agency Partner</b></span> — <span class="nb">พาร์ตเนอร์เอเจนซี</span><span class="nb">อย่างเป็นทางการของ TikTok</span></li>
+            <li><span class="nb">ดูแลงบโฆษณารวม</span> <span class="nb"><b>หลักร้อยล้านบาทต่อปี</b></span> <span class="nb">ให้แบรนด์และร้านค้าจริง</span></li>
+          </ul>
+          <div class="formula" style="margin-top:4px; font-size:clamp(15px,1.4vw,18px);">“ร้านอร่อยที่คนเห็นก่อน คือร้านที่ได้ลูกค้าก่อน — วันนี้ผมจะพาทุกคนไปถึงจุดนั้น”</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 WHY TIKTOK -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">ทำไมต้อง TikTok</div>
+        <h2>ลูกค้าหาร้านกินข้าวจาก <span class="highlight">มือถือ</span> ก่อนเดินเข้าร้านเสมอ</h2>
+        <div class="grid three" style="flex:1; align-content:center;">
+          <div class="card accent-red"><span class="ic" data-icon="mobile"></span><strong>คนไถดูทั้งวัน</strong><p>คนไทยใช้ TikTok หลายชั่วโมงต่อวัน — คลิปอาหารน่ากินคือสิ่งที่คนหยุดดูและแชร์มากที่สุด</p></div>
+          <div class="card accent-yellow"><span class="ic" data-icon="search"></span><strong>กลายเป็นแอปค้นหา</strong><p>คนรุ่นใหม่พิมพ์ "ร้านอร่อยใกล้ฉัน" ใน TikTok ไม่ต่างจาก Google — ถ้าไม่มีคลิป = ไม่ถูกเจอ</p></div>
+          <div class="card accent-green"><span class="ic" data-icon="walk"></span><strong>เห็นแล้วมาเลย</strong><p>คลิปเดียวที่ปัง เปลี่ยนคนแปลกหน้าให้ต่อคิวหน้าร้านได้ภายในวันเดียว</p></div>
+        </div>
+        <div class="formula">หัวใจวันนี้: ทำให้ร้านคุณ <b>ถูกเห็น</b> → <b>น่ากิน</b> → <b>คนตัดสินใจมา</b></div>
+      </div>
+    </section>
+
+    <!-- 3 ROADMAP -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">สิ่งที่คุณจะได้จาก 45 นาทีนี้</div>
+        <h2>4 เรื่องที่ทำให้ร้านคุณ <span class="highlight">ขายดีขึ้นจริง</span></h2>
+        <div class="grid four" style="flex:1; align-content:center;">
+          <div class="card accent-blue"><span class="ic" data-icon="store"></span><strong>1 · ตั้งร้านให้พร้อม</strong><p>โปรไฟล์ + แผนที่ + เข้าใจลูกค้า ก่อนลงคลิปแรก</p></div>
+          <div class="card accent-red"><span class="ic" data-icon="video"></span><strong>2 · ทำคลิปให้ปัง</strong><p>Hook 3 วิ + ประเภทคลิป + ถ่ายอาหารให้น่ากิน</p></div>
+          <div class="card accent-yellow"><span class="ic" data-icon="rocket"></span><strong>3 · ยิงแอดเป็น</strong><p>ตั้งแคมเปญแรก + ยิงสู่กลุ่มเป้าหมาย + อ่านผล</p></div>
+          <div class="card accent-green"><span class="ic" data-icon="budget"></span><strong>4 · เปลี่ยนเป็นยอดขาย</strong><p>จากยอดวิว → คนเดินเข้าร้าน + วัดผล</p></div>
+        </div>
+        <div class="formula">ไม่ต้องเก่งถ่ายรูป ไม่ต้องเต้น — แค่ทำตามระบบทีละขั้น</div>
+      </div>
+    </section>
+
+    <!-- 4 QUOTE -->
+    <section class="slide dark quote-slide">
+      <div class="content">
+        <div class="eyebrow">Mindset</div>
+        <h2 class="hero-quote">ร้านอร่อยอย่างเดียว<br>วันนี้ <span class="accent">ไม่พออีกต่อไป</span></h2>
+        <p class="quote-sub">ของอร่อยมีอยู่ทุกซอย แต่ร้านที่ "คนเห็นก่อน" คือร้านที่ได้ลูกค้าก่อน — TikTok คือสนามที่ร้านเล็กชนะร้านใหญ่ได้</p>
+        <div class="quote-grid">
+          <div class="quote-pill">อร่อย = ทำให้กลับมา</div>
+          <div class="quote-pill">ถูกเห็น = ได้ลูกค้าใหม่</div>
+          <div class="quote-pill">TikTok = ทำให้ถูกเห็น</div>
+        </div>
+        <img class="brand-visual target" src="Tidjaruad Branded Asset/tidjaruad-brand-assets/04-mascot-pointing-target.png" alt="">
+      </div>
+    </section>
+
+    <!-- 5 DIVIDER 01 -->
+    <section class="slide dark divider-slide">
+      <div class="content">
+        <div class="divider-visual">
+          <div class="divider-num" data-num="01">01</div>
+          <img class="divider-mascot" src="Tidjaruad Branded Asset/tidjaruad-brand-assets/03-mascot-holding-dashboard.png" alt="">
+        </div>
+        <div class="divider-body">
+          <div class="divider-label"><span class="divider-step">Section 01</span><span class="divider-eyebrow">Foundation</span></div>
+          <h2 class="divider-title"><span class="divider-accent">ตั้งร้านให้พร้อม</span><br>ก่อนลงคลิปแรก</h2>
+          <p class="divider-sub">ก่อนจะทำคลิปให้ปัง ต้องวางฐานให้แน่น — โปรไฟล์ที่คนเจอง่าย ปักหมุดร้าน และรู้ว่าลูกค้าเราเป็นใคร</p>
+          <div class="divider-meta"><span class="chip chip-hero">โปรไฟล์ร้าน</span><span class="chip">ปักหมุดแผนที่</span><span class="chip">เข้าใจลูกค้า</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 SETUP PROFILE -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Foundation / ตั้งโปรไฟล์</div>
+        <h2>ตั้งโปรไฟล์ร้านให้ <span class="highlight">คนเจอง่าย & ไว้ใจ</span></h2>
+        <div class="setup-grid">
+          <div class="setup-step">
+            <div class="setup-mock photo-real photo-right"><img src="generated-realistic-assets/profile-contact.png" alt="เจ้าของร้านดูโปรไฟล์ร้านในมือถือพร้อมช่องทางติดต่อ"></div>
+            <div class="setup-label"><div class="step-pill">1</div><h3>ช่องทางสั่ง/ติดต่อ</h3></div>
+            <p>ใส่ <span class="kw">LINE / เบอร์โทร / ลิงก์เดลิเวอรี</span> และปุ่มแผนที่ใน Bio — ให้คนสั่งหรือมาร้านได้ทันทีใน 1 คลิก</p>
+          </div>
+          <div class="setup-step">
+            <div class="setup-mock photo-real"><img src="generated-realistic-assets/profile-location.png" alt="โปรไฟล์ร้านอาหารพร้อมพิกัดและเวลาเปิดปิด"></div>
+            <div class="setup-label"><div class="step-pill">2</div><h3>ชื่อ + ที่อยู่ชัด</h3></div>
+            <p>ชื่อร้าน + ทำเล (เช่น "ก๋วยเตี๋ยวเรือ อารีย์") ใส่ <span class="kw">พิกัด/แผนที่</span> เวลาเปิด-ปิด และเบอร์โทร</p>
+          </div>
+          <div class="setup-step">
+            <div class="setup-mock photo-real photo-low"><img src="generated-realistic-assets/profile-menu.png" alt="เมนูซิกเนเจอร์ของร้านสำหรับปักหมุดคลิป"></div>
+            <div class="setup-label"><div class="step-pill">3</div><h3>หน้าตาน่ากิน</h3></div>
+            <p>รูปโปรไฟล์โลโก้/เมนูเด่น + ปักหมุดคลิปเมนูซิกเนเจอร์ <span class="kw">3 คลิป</span> ไว้บนสุด</p>
+          </div>
+        </div>
+        <div class="formula">เป้าหมาย: คนกดเข้าโปรไฟล์ 5 วินาที ต้องรู้ทันทีว่า "ขายอะไร อยู่ไหน อร่อยไหม"</div>
+      </div>
+    </section>
+
+    <!-- 7 AUDIENCE -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Foundation / เข้าใจลูกค้า</div>
+        <h2>ใครคือคนที่เรา <span class="highlight">อยากให้เดินเข้าร้าน</span>?</h2>
+        <div class="grid four" style="flex:1; align-content:center;">
+          <div class="card accent-blue"><span class="ic" data-icon="compass"></span><strong>คนใกล้ร้าน</strong><p>คนทำงาน/อยู่อาศัยใกล้ร้าน — กลุ่มที่มาง่ายสุด เน้น "แวะกินพักเที่ยง/หลังเลิกงาน"</p></div>
+          <div class="card accent-red"><span class="ic" data-icon="trend"></span><strong>สายตามรอย</strong><p>ชอบลองร้านใหม่ ตามเทรนด์ — ดึงด้วยเมนูเด็ด/วิธีกินแปลก/มุมถ่ายรูปสวย</p></div>
+          <div class="card accent-yellow"><span class="ic" data-icon="family"></span><strong>กลุ่ม/ครอบครัว</strong><p>มาหลายคน มื้อพิเศษ — ดึงด้วยเซ็ตคุ้ม โปรกลุ่ม บรรยากาศนั่งสบาย</p></div>
+          <div class="card accent-green"><span class="ic" data-icon="voice"></span><strong>ลูกค้าบอกต่อ (UGC)</strong><p>คนที่มาแล้วชอบ ถ่ายรีวิว/แท็กร้านให้เอง — กระบอกเสียงฟรีที่คนเชื่อสุด ชวนให้รีวิว/แชร์</p></div>
+        </div>
+        <div class="formula">เลือก <b>1 กลุ่มหลัก</b> ก่อน ทำคลิปพูดกับเขาให้ตรง + กระตุ้นให้ลูกค้า <b>รีวิวบอกต่อ</b> เสมอ</div>
+      </div>
+    </section>
+
+    <!-- 8 DIVIDER 02 -->
+    <section class="slide dark divider-slide">
+      <div class="content">
+        <div class="divider-visual">
+          <div class="divider-num" data-num="02">02</div>
+          <img class="divider-mascot" src="Tidjaruad Branded Asset/tidjaruad-brand-assets/04-mascot-pointing-target.png" alt="">
+        </div>
+        <div class="divider-body">
+          <div class="divider-label"><span class="divider-step">Section 02</span><span class="divider-eyebrow">Content</span></div>
+          <h2 class="divider-title"><span class="divider-accent">ทำคลิปให้ปัง</span><br>คนหยุดดู & หิว</h2>
+          <p class="divider-sub">หัวใจของ TikTok คือคลิป — เราจะเรียน Hook 3 วินาที, ประเภทคลิปที่ควรทำ, โครงคลิป และเทคนิคถ่ายอาหารให้น่ากิน</p>
+          <div class="divider-meta"><span class="chip chip-hero">Hook 3 วิ</span><span class="chip">4 ประเภทคลิป</span><span class="chip">ถ่ายให้น่ากิน</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 HOOK -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Content / 3 วินาทีแรก</div>
+        <h2>3 วินาทีแรก <span class="kw-red">ตัดสินทุกอย่าง</span> — 4 วิธีเปิด</h2>
+        <div class="grid four" style="flex:1; align-content:center;">
+          <div class="card accent-red"><span class="ic" data-icon="food"></span><strong>ภาพยั่ว</strong><p>เปิดด้วยช็อตอาหารที่น่ากินที่สุด — ชีสยืด น้ำซุปเดือด เทราดซอส ควันลอย</p></div>
+          <div class="card accent-yellow"><span class="ic" data-icon="chat"></span><strong>คำพูดสะดุด</strong><p>"ร้านนี้ลับสุด ๆ" / "เมนูนี้สั่งไม่ทันทุกวัน" — พูดใน 1 วิแรก</p></div>
+          <div class="card accent-blue"><span class="ic" data-icon="caption"></span><strong>ตัวหนังสือบนจอ</strong><p>ขึ้นข้อความใหญ่ ๆ ที่คนอ่านปุ๊บอยากดูต่อ เช่น "หมูกรอบ 39 บาท?!"</p></div>
+          <div class="card accent-green"><span class="ic" data-icon="sound"></span><strong>เสียงสะดุดหู</strong><p>เปิดมาด้วยเสียงจริง — เสียงทอดฉ่า น้ำเดือด หั่นกรอบ ๆ ได้ยินแล้วหิวทันที</p></div>
+        </div>
+        <div class="formula">กฎเหล็ก: เอาช็อตที่ <b>น่ากินที่สุด</b> ไว้วินาทีแรก — ห้ามเปิดด้วยโลโก้หรืออินโทรยาว</div>
+      </div>
+    </section>
+
+    <!-- 10 HOOK FORMULAS -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Content / สูตร Hook</div>
+        <h2>4 สูตร Hook ที่ใช้ได้กับ <span class="highlight">ทุกร้าน</span></h2>
+        <div class="grid two" style="flex:1; align-content:center;">
+          <div class="card accent-red"><strong>① ตั้งคำถามแทนใจลูกค้า</strong><p>"อยากกินของอร่อยแต่งบ 100 ทำไงดี?" → เฉลยด้วยเมนูร้านเรา</p></div>
+          <div class="card accent-yellow"><strong>② ราคา/ความคุ้มช็อก</strong><p>"จานนี้ 49 บาท เนื้อแน่นขนาดนี้?" → โชว์ปริมาณจริง</p></div>
+          <div class="card accent-blue"><strong>③ ก่อน–หลัง / กระบวนการ</strong><p>โชว์ขั้นตอนทำที่ดูน่ากิน เช่น ย่าง เทซอส หั่น — คนชอบดูจนจบ</p></div>
+          <div class="card accent-green"><strong>④ ความลับ/รีวิวจริง</strong><p>"ร้านนี้คนแถวนี้ไม่อยากบอกใคร" / รีวิวลูกค้าหน้าตาฟิน</p></div>
+        </div>
+        <div class="formula">เขียน Hook ไว้ <b>ก่อนถ่าย</b> เสมอ — 1 คลิป = 1 ข้อความที่อยากให้คนจำ</div>
+      </div>
+    </section>
+
+    <!-- 11 CONTENT PILLARS -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Content / ประเภทคลิป</div>
+        <h2>4 ประเภทคลิปที่ร้านอาหาร <span class="highlight">ต้องมีสลับกัน</span></h2>
+        <div class="grid four" style="flex:1; align-content:center;">
+          <div class="card accent-red"><span class="ic" data-icon="plate"></span><strong>เมนูเด่น</strong><p>โชว์เมนูซิกเนเจอร์แบบยั่วน้ำลาย — ตัวทำยอดวิวหลัก</p></div>
+          <div class="card accent-yellow"><span class="ic" data-icon="behind"></span><strong>เบื้องหลัง</strong><p>ครัว วัตถุดิบสด การเตรียม — สร้างความน่าเชื่อถือ</p></div>
+          <div class="card accent-blue"><span class="ic" data-icon="star"></span><strong>รีวิว/ลูกค้า</strong><p>ปฏิกิริยาลูกค้าจริง บรรยากาศร้าน คิวยาว — สร้างความอยากตาม</p></div>
+          <div class="card accent-green"><span class="ic" data-icon="gift"></span><strong>โปร/CTA</strong><p>โปรวันนี้ เมนูใหม่ ชวนมาร้าน — ตัวเปลี่ยนเป็นยอดขาย</p></div>
+        </div>
+        <div class="formula">สัดส่วนแนะนำ: เมนูเด่น 40% · เบื้องหลัง 25% · รีวิว 20% · โปร 15%</div>
+      </div>
+    </section>
+
+    <!-- 12 CLIP STRUCTURE -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Content / โครงคลิป</div>
+        <h2>โครงคลิปขายของกินให้ <span class="highlight">น่ากินทั้งคลิป</span></h2>
+        <div class="journey-flow" style="grid-template-columns:1fr 30px 1fr 30px 1fr 30px 1fr; flex:1; align-content:center;">
+          <div class="journey-step"><div class="journey-num">1</div><b>0–3 วิ · Hook</b><span>ช็อตน่ากินที่สุด + ข้อความสะดุด</span></div>
+          <div class="journey-arrow">→</div>
+          <div class="journey-step"><div class="journey-num">2</div><b>3–10 วิ · เนื้อหา</b><span>โชว์เมนู/วิธีกิน/จุดเด่น พูดกระชับ</span></div>
+          <div class="journey-arrow">→</div>
+          <div class="journey-step"><div class="journey-num">3</div><b>10–20 วิ · ความฟิน</b><span>ช็อตกัด/ชีสยืด/รีแอคชั่นจริง</span></div>
+          <div class="journey-arrow">→</div>
+          <div class="journey-step journey-step-hero"><div class="journey-num">4</div><b>ปิด · CTA</b><span>"ร้านอยู่...แวะมาเลย" + ที่อยู่</span></div>
+        </div>
+        <div class="formula">ความยาวที่ดี: <b>15–30 วินาที</b> — สั้น กระชับ ดูจบแล้วหิว และรู้ว่าจะไปกินที่ไหน</div>
+      </div>
+    </section>
+
+    <!-- 13 SHOOTING -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Content / เทคนิคถ่าย</div>
+        <h2>ถ่ายอาหารให้ <span class="highlight">น่ากิน</span> ด้วยแค่มือถือ</h2>
+        <div class="setup-grid">
+          <div class="setup-step">
+            <div class="setup-mock photo-real photo-right"><img src="generated-realistic-assets/shoot-light-window.png" alt="มือถือแนวตั้งถ่ายอาหารใกล้แสงธรรมชาติ"></div>
+            <div class="setup-label"><div class="step-pill">1</div><h3>แสงคือทุกอย่าง</h3></div>
+            <p>ถ่ายใกล้ <span class="kw">หน้าต่าง/แสงธรรมชาติ</span> หันอาหารเข้าหาแสง เลี่ยงแสงไฟเหลืองในครัว</p>
+          </div>
+          <div class="setup-step">
+            <div class="setup-mock photo-real photo-low"><img src="generated-realistic-assets/shoot-closeup-motion.png" alt="โคลสอัพอาหารเห็นการขยับและเนื้อสัมผัส"></div>
+            <div class="setup-label"><div class="step-pill">2</div><h3>ขยับ + ใกล้</h3></div>
+            <p>ถ่าย <span class="kw">โคลสอัพ</span> เห็นเนื้อสัมผัส มีการเคลื่อนไหว เช่น เทซอส ตักขึ้น ควันลอย</p>
+          </div>
+          <div class="setup-step">
+            <div class="setup-mock photo-real"><img src="generated-realistic-assets/shoot-sizzling-sound.png" alt="ครัวกำลังทอดอาหารและบันทึกเสียงจริง"></div>
+            <div class="setup-label"><div class="step-pill">3</div><h3>เสียง = ความฟิน</h3></div>
+            <p>เก็บเสียงจริง — <span class="kw">เสียงกรอบ ทอด เดือด</span> ทำให้คนหิวกว่าเพลงประกอบ</p>
+          </div>
+        </div>
+        <div class="formula">ไม่ต้องมีกล้องแพง — มือถือ + แสงดี + ช็อตใกล้ ๆ ชนะคลิปสวยที่ไม่น่ากิน</div>
+      </div>
+    </section>
+
+    <!-- 13B LIVE + ATMOSPHERE -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Content / ไลฟ์สด & บรรยากาศ</div>
+        <h2>ไลฟ์สด + ถ่ายบรรยากาศ <span class="highlight">เพิ่มการมองเห็นร้าน</span></h2>
+        <div class="grid three" style="flex:1; align-content:center;">
+          <div class="card accent-red"><span class="ic" data-icon="live"></span><strong>ไลฟ์ = ถูกดันให้คนใหม่เห็น</strong><p>TikTok ดันไลฟ์ให้คนที่ยังไม่ตามเห็นร้านเรา — เพิ่มการมองเห็น และคนถาม-ตอบเมนู/ที่อยู่ได้สดทันที</p></div>
+          <div class="card accent-yellow"><span class="ic" data-icon="pan"></span><strong>ถ่ายบรรยากาศ "ตอนทำ"</strong><p>ครัวจริง ไฟลุก ควันฉ่า เสียงทอด คิวหน้าร้าน — ภาพดิบ ๆ ตอนทำงานสร้างความน่าเชื่อถือและอยากมา</p></div>
+          <div class="card accent-blue"><span class="ic" data-icon="megaphone"></span><strong>ไลฟ์อะไรดี</strong><p>โชว์ทำเมนูสด · พาทัวร์ร้าน · ตอบคำถามลูกค้า · โปรเฉพาะคนดูไลฟ์ "พูดในไลฟ์ลด..."</p></div>
+        </div>
+        <div class="formula">เคล็ดลับ: ไลฟ์ <b>ช่วงก่อนมื้ออาหาร</b> (คนหิว) · ทักทายคนดูบ่อย ๆ · ปักหมุดที่อยู่/โปรไว้ในไลฟ์เสมอ</div>
+      </div>
+    </section>
+
+    <!-- 14 RULE GRID CONTENT -->
+    <section class="slide rules-slide">
+      <div class="content">
+        <div class="rules-topbar">
+          <div class="eyebrow">Content / กฎเหล็ก</div>
+          <span class="rules-important"><span data-icon="warning"></span>IMPORTANT · อ่านให้ครบ</span>
+        </div>
+        <h2 style="font-size:clamp(33.8px, 3.51vw, 44.2px);">กฎทำคลิปร้านอาหาร — <span class="kw-red">ทำ & เลี่ยง</span></h2>
+        <div class="rule-grid">
+          <div class="rule-card rule-card-ok"><div class="rule-icon" data-icon="check"></div><strong>เปิดด้วยช็อตน่ากิน</strong><p>3 วิแรกต้องยั่ว ไม่ใช่โลโก้</p></div>
+          <div class="rule-card rule-card-ok"><div class="rule-icon" data-icon="check"></div><strong>ใส่ที่อยู่ทุกคลิป</strong><p>บอกทำเล/พิกัดให้คนตามมาถูก</p></div>
+          <div class="rule-card rule-card-ok"><div class="rule-icon" data-icon="check"></div><strong>ลงสม่ำเสมอ</strong><p>ดีกว่าลงทีละเยอะแล้วหาย</p></div>
+          <div class="rule-card"><div class="rule-icon" data-icon="xmark"></div><strong>อย่าทำยาวเกิน</strong><p>เกิน 40 วิคนเลื่อนหนีง่าย</p></div>
+          <div class="rule-card"><div class="rule-icon" data-icon="xmark"></div><strong>อย่าใช้ภาพมืด/เบลอ</strong><p>อาหารดูไม่สด = คนไม่อยากกิน</p></div>
+          <div class="rule-card rule-card-warn"><div class="rule-icon" data-icon="warning"></div><strong>อย่าโฆษณาเกินจริง</strong><p>เลี่ยงคำอวดอ้างสรรพคุณ/รักษาโรค</p><div class="rule-disclaimer">* คำกล่าวอ้างเรื่องสุขภาพต้องมีหลักฐาน/ไม่เกินจริง</div></div>
+        </div>
+        <div class="rule-formula">
+          <span class="rule-formula-head"><span data-icon="timer"></span>เช็ก 3 วิ ก่อนโพสต์</span>
+          <span class="rf-check"><span data-icon="check"></span>ช็อตแรกน่ากินไหม</span>
+          <span class="rf-check"><span data-icon="check"></span>มีที่อยู่ร้านไหม</span>
+          <span class="rf-check"><span data-icon="check"></span>ดูจบแล้วอยากมาไหม</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 15 CAPTION HASHTAG SOUND -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Content / แคปชั่น & เสียง</div>
+        <h2>แคปชั่น + แฮชแท็ก + เพลง ให้คลิป <span class="highlight">ไปไกลขึ้น</span></h2>
+        <div class="setup-grid">
+          <div class="setup-step">
+            <div class="setup-mock photo-real"><img src="generated-realistic-assets/caption-writing.png" alt="เขียนแคปชั่น ราคา และทำเลให้คลิปอาหาร"></div>
+            <div class="setup-label"><div class="step-pill">1</div><h3>แคปชั่น</h3></div>
+            <p>สั้น เร้าความอยาก + ใส่ <span class="kw">ทำเล/ราคา</span> เช่น "หมูกรอบเจ้าเด็ด อารีย์ เริ่ม 49.-"</p>
+          </div>
+          <div class="setup-step">
+            <div class="setup-mock photo-real photo-right"><img src="generated-realistic-assets/hashtag-local-search.png" alt="ค้นหาแฮชแท็กทำเลและประเภทอาหารบนมือถือ"></div>
+            <div class="setup-label"><div class="step-pill">2</div><h3>แฮชแท็ก</h3></div>
+            <p>ผสม <span class="kw">ทำเล + ประเภทอาหาร</span> เช่น #ของกินอารีย์ #หมูกรอบ #ร้านอร่อยกรุงเทพ</p>
+          </div>
+          <div class="setup-step">
+            <div class="setup-mock photo-real photo-left"><img src="generated-realistic-assets/music-sound-select.png" alt="เลือกเสียงหรือเพลงประกอบสำหรับคลิปอาหาร"></div>
+            <div class="setup-label"><div class="step-pill">3</div><h3>เสียง/เพลง</h3></div>
+            <p>ใช้ <span class="kw">เพลงกำลังฮิต</span> ช่วยดันยอด แต่เปิดเสียงอาหารจริงคลอด้วยจะฟินกว่า</p>
+          </div>
+        </div>
+        <div class="formula">ทุกแคปชั่นต้องตอบ "ร้านนี้อยู่ไหน" — เพราะเป้าหมายคือให้คน <b>มาที่ร้าน</b></div>
+      </div>
+    </section>
+
+    <!-- 16B EXAMPLES · ขายความน่ากิน -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">ตัวอย่างของจริง / 1 · ขายความน่ากิน</div>
+        <h2>คลิป <span class="highlight">ขายความน่ากิน</span> (3 ตัวอย่าง)</h2>
+        <div class="vidgrid">
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:var(--red)">น่ากิน 1</span><video poster="videos/nakin1.jpg" controls preload="none" playsinline><source src="videos/nakin1.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 1</b><span>ช็อตยั่วน้ำลาย</span></div></div>
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:var(--red)">น่ากิน 2</span><video poster="videos/nakin2.jpg" controls preload="none" playsinline><source src="videos/nakin2.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 2</b><span>เทซอส/ชีสยืด</span></div></div>
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:var(--red)">น่ากิน 3</span><video poster="videos/nakin3.jpg" controls preload="none" playsinline><source src="videos/nakin3.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 3</b><span>ควันลอย/โคลสอัพ</span></div></div>
+        </div>
+        <div class="formula"><span data-icon="play"></span>สังเกต: เปิดด้วย <b>ช็อตน่ากินที่สุดใน 3 วิแรก</b> + เสียงจริง ทำให้คนหยุดดู</div>
+      </div>
+    </section>
+
+    <!-- 16C EXAMPLES · แนะนำเมนู -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">ตัวอย่างของจริง / 2 · แนะนำเมนู</div>
+        <h2>คลิป <span class="highlight">แนะนำเมนู</span> (3 ตัวอย่าง)</h2>
+        <div class="vidgrid">
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:var(--blue)">เมนู 1</span><video poster="videos/menu1.jpg" controls preload="none" playsinline><source src="videos/menu1.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 1</b><span>พรีเซนต์เมนูเด่น</span></div></div>
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:var(--blue)">เมนู 2</span><video poster="videos/menu2.jpg" controls preload="none" playsinline><source src="videos/menu2.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 2</b><span>บอกจุดขาย/ราคา</span></div></div>
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:var(--blue)">เมนู 3</span><video poster="videos/menu3.jpg" controls preload="none" playsinline><source src="videos/menu3.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 3</b><span>วิธีกิน/ความพิเศษ</span></div></div>
+        </div>
+        <div class="formula"><span data-icon="play"></span>สังเกต: บอก <b>จุดขาย + ราคา</b> ให้ชัด ทำให้คนตัดสินใจอยากลอง</div>
+      </div>
+    </section>
+
+    <!-- 16D EXAMPLES · ขายบรรยากาศ -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">ตัวอย่างของจริง / 3 · ขายบรรยากาศ</div>
+        <h2>คลิป <span class="highlight">ขายบรรยากาศ</span> (3 ตัวอย่าง)</h2>
+        <div class="vidgrid">
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:#B26A00">บรรยากาศ 1</span><video poster="videos/mood1.jpg" controls preload="none" playsinline><source src="videos/mood1.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 1</b><span>มุมร้าน/ที่นั่ง</span></div></div>
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:#B26A00">บรรยากาศ 2</span><video poster="videos/mood2.jpg" controls preload="none" playsinline><source src="videos/mood2.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 2</b><span>แสง/โทนร้าน</span></div></div>
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:#B26A00">บรรยากาศ 3</span><video poster="videos/mood3.jpg" controls preload="none" playsinline><source src="videos/mood3.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 3</b><span>โมเมนต์ในร้าน</span></div></div>
+        </div>
+        <div class="formula"><span data-icon="play"></span>สังเกต: ขาย <b>ฟีล/บรรยากาศ</b> — ดึงสายตามรอยและกลุ่มที่ชอบถ่ายรูป</div>
+      </div>
+    </section>
+
+    <!-- 16E EXAMPLES · ความคุ้ม/งบ -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">ตัวอย่างของจริง / 4 · ความคุ้ม/งบ</div>
+        <h2>คลิป <span class="highlight">ความคุ้ม · กินในงบ</span> (3 ตัวอย่าง)</h2>
+        <div class="vidgrid">
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:var(--green)">คุ้ม 1</span><video poster="videos/budget1.jpg" controls preload="none" playsinline><source src="videos/budget1.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 1</b><span>กินคุ้ม มีทอน</span></div></div>
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:var(--green)">คุ้ม 2</span><video poster="videos/budget2.jpg" controls preload="none" playsinline><source src="videos/budget2.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 2</b><span>เซ็ตคุ้ม/ราคาช็อก</span></div></div>
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:var(--green)">คุ้ม 3</span><video poster="videos/budget3.jpg" controls preload="none" playsinline><source src="videos/budget3.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 3</b><span>ปริมาณจัดเต็ม</span></div></div>
+        </div>
+        <div class="formula"><span data-icon="play"></span>สังเกต: ชู <b>ความคุ้ม/ราคา</b> ชัด ๆ — กระตุ้นการตัดสินใจมากิน</div>
+      </div>
+    </section>
+
+    <!-- 16F EXAMPLES · อินฟลูรีวิว -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">ตัวอย่างของจริง / 5 · อินฟลู/KOL รีวิว</div>
+        <h2>คลิป <span class="highlight">อินฟลู/KOL รีวิว</span> (3 ตัวอย่าง)</h2>
+        <div class="vidgrid">
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:#1B1D45">รีวิว 1</span><video poster="videos/kol1.jpg" controls preload="none" playsinline><source src="videos/kol1.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 1</b><span>รีวิวเวอร์พูดแทน</span></div></div>
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:#1B1D45">รีวิว 2</span><video poster="videos/kol2.jpg" controls preload="none" playsinline><source src="videos/kol2.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 2</b><span>รีแอคชั่นจริง</span></div></div>
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:#1B1D45">รีวิว 3</span><video poster="videos/kol3.jpg" controls preload="none" playsinline><source src="videos/kol3.mp4" type="video/mp4"></video><div class="vplay"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.45)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg></div></div><div class="vlabel"><b>ตัวอย่าง 3</b><span>บอกพิกัด/ชวนมา</span></div></div>
+        </div>
+        <div class="formula"><span data-icon="play"></span>สังเกต: ใช้ <b>ความน่าเชื่อถือของคนรีวิว</b> + ขออนุญาตเอาคลิปไปยิงแอดต่อได้</div>
+      </div>
+    </section>
+
+    <!-- 16G EXAMPLES · ไลฟ์สด -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">ตัวอย่างของจริง / 6 · ไลฟ์สด</div>
+        <h2>ตัวอย่าง <span class="highlight">ไลฟ์สดร้านอาหาร</span></h2>
+        <div class="vidgrid">
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:#E1306C">ไลฟ์ 1</span><img src="videos/live1.jpg" alt="ตัวอย่างไลฟ์ 1"></div><div class="vlabel"><b>ไลฟ์ 1</b><span>ขายสดหน้าร้าน</span></div></div>
+          <div class="vidcard"><div class="vwrap"><span class="vtag" style="background:#E1306C">ไลฟ์ 2</span><img src="videos/live2.jpg" alt="ตัวอย่างไลฟ์ 2"></div><div class="vlabel"><b>ไลฟ์ 2</b><span>โชว์ทำ/ตอบคำถาม</span></div></div>
+        </div>
+        <div class="formula"><span data-icon="play"></span>ไลฟ์ช่วยเพิ่ม <b>การมองเห็น</b> — ไลฟ์ช่วงก่อนมื้อ + ปักหมุดที่อยู่/โปรในไลฟ์</div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 03 · WORKSHOP ตัดต่อวีดีโอ ===== -->
+    <section class="slide dark divider-slide">
+      <div class="content">
+        <div class="divider-visual">
+          <div class="divider-num" data-num="03">03</div>
+          <img class="divider-mascot" src="Tidjaruad Branded Asset/tidjaruad-brand-assets/02-mascot-flying-jetpack.png" alt="">
+        </div>
+        <div class="divider-body">
+          <div class="divider-label"><span class="divider-step">Workshop 03</span><span class="divider-eyebrow">Video Editing</span></div>
+          <h2 class="divider-title"><span class="divider-accent">ตัดต่อวีดีโอ</span><br>ลงมือทำไปด้วยกัน</h2>
+          <p class="divider-sub">ถ่ายมาดีแล้วต้องตัดต่อให้กระชับและน่าดู — เวิร์กช็อปนี้เปิดแอปทำตามทีละขั้น จนได้คลิป 15 วินาทีพร้อมโพสต์</p>
+          <div class="divider-meta"><span class="chip chip-hero">แอปฟรีในมือถือ</span><span class="chip">ตัด-ใส่ซับ-ใส่เพลง</span><span class="chip">ลงมือทำจริง</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WS · แอปตัดต่อ -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Workshop / เครื่องมือ</div>
+        <h2>ตัดต่อด้วย <span class="highlight">มือถือเครื่องเดียว</span> ก็พอ</h2>
+        <div class="grid three" style="flex:1; align-content:center;">
+          <div class="card accent-red"><span class="ic" data-icon="scissors"></span><strong>CapCut</strong><p>ฟรี ใช้ง่ายสุดสำหรับมือใหม่ — ตัด ใส่ซับอัตโนมัติ เทมเพลตคลิปอาหารเพียบ (แนะนำเริ่มที่นี่)</p></div>
+          <div class="card accent-yellow"><span class="ic" data-icon="phone"></span><strong>ตัดในแอป TikTok</strong><p>ถ่าย-ตัด-ลงเสียงในแอปเลย เหมาะคลิปเร็ว ๆ และได้เพลงที่กำลังฮิตในระบบ</p></div>
+          <div class="card accent-blue"><span class="ic" data-icon="sliders"></span><strong>เทมเพลตสำเร็จ</strong><p>เลือกเทมเพลตในแอป แล้ว "ใส่คลิปของเรา" ลงไป — เร็วและสวยโดยไม่ต้องเก่งตัดต่อ</p></div>
+        </div>
+        <div class="formula">วันนี้ใช้ <b>CapCut</b> เป็นหลัก — เปิดแอปในมือถือ ดาวน์โหลดฟรี แล้วทำตามไปพร้อมกัน</div>
+      </div>
+    </section>
+
+    <!-- WS · 4 ขั้นตอนตัดต่อ + CapCut mockup -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Workshop / ขั้นตอน</div>
+        <h2>4 ขั้นตอนตัดคลิปให้ <span class="highlight">พร้อมโพสต์</span> — หน้าตา CapCut</h2>
+        <div class="step-shot-wrap" style="grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);">
+          <div class="capcut" aria-hidden="true">
+            <div class="cc-bar"><span class="cc-dot" style="background:#ff5f57"></span><span class="cc-dot" style="background:#febc2e"></span><span class="cc-dot" style="background:#28c840"></span><b>CapCut</b><span class="cc-spacer"></span><span class="cc-export">ส่งออก 1080p</span></div>
+            <div class="cc-preview">
+              <span class="cc-hooktag">HOOK: หมูกรอบ 49.-</span>
+              <div class="cc-foodtile" data-illo="menu"></div>
+              <span class="cc-caption">หมูกรอบเจ้าเด็ด · อารีย์ · เริ่ม 49.-</span>
+            </div>
+            <div class="cc-timeline">
+              <div class="cc-track"><span class="cc-tlabel" data-icon="video"></span><span class="cc-clip v"></span><span class="cc-playhead"></span><span class="cc-clip v" style="flex:.6;opacity:.7"></span></div>
+              <div class="cc-track"><span class="cc-tlabel" data-icon="text"></span><span class="cc-clip t"></span></div>
+              <div class="cc-track"><span class="cc-tlabel" data-icon="music"></span><span class="cc-clip a"></span></div>
+            </div>
+          </div>
+          <div class="step-shot-side" style="gap:11px;">
+            <div style="display:flex;align-items:center;gap:10px"><div class="step-pill">1</div><div><b style="color:var(--navy);font-size:20.8px;">นำเข้า + เรียง</b><div style="font-size:16.9px;color:var(--muted)">ลากคลิปเข้า เอาช็อตน่ากินสุดขึ้นก่อน</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px"><div class="step-pill">2</div><div><b style="color:var(--navy);font-size:20.8px;">ตัดให้กระชับ</b><div style="font-size:16.9px;color:var(--muted)">ลบช่วงน่าเบื่อ เหลือ 15–30 วิ</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px"><div class="step-pill">3</div><div><b style="color:var(--navy);font-size:20.8px;">ใส่ข้อความ/ซับ</b><div style="font-size:16.9px;color:var(--muted)">ขึ้น Hook ตัวใหญ่ + ซับอัตโนมัติ (แถบเหลือง)</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px"><div class="step-pill" style="background:linear-gradient(135deg,var(--red),var(--yellow))">4</div><div><b style="color:var(--navy);font-size:20.8px;">เพลง + ส่งออก</b><div style="font-size:16.9px;color:var(--muted)">เพลงคลอเสียงจริง (แถบฟ้า) ส่งออก 1080p</div></div></div>
+          </div>
+        </div>
+        <div class="formula"><span data-icon="star"></span>Demo สด: เปิด CapCut ทำให้ดูทีละปุ่ม — ตัด 1 คลิปให้จบใน 5 นาที</div>
+      </div>
+    </section>
+
+    <!-- WS · เมนู CapCut -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Workshop / เมนู CapCut</div>
+        <h2>ทางลัด — ตัดคลิปด้วย <span class="highlight">CapCut</span></h2>
+        <div class="setup-grid workshop-mock capcut-workflow">
+          <div class="setup-step">
+            <div class="setup-mock capcut-mock" aria-label="หน้าจอ CapCut เมนู Media Import และ Format 9:16">
+              <div class="capcut-shot">
+                <div class="capcut-top"><span class="capcut-brand">CapCut</span><span>New project · 9:16</span><span class="capcut-export">Export</span></div>
+                <div class="capcut-rail"><span class="capcut-tab on">Media</span><span class="capcut-tab">Audio</span><span class="capcut-tab">Text</span><span class="capcut-tab">Effects</span></div>
+                <div class="capcut-stage"><div class="capcut-phone"></div><span class="capcut-call">Import</span></div>
+                <div class="capcut-panel"><span class="capcut-chip hot">Import</span><span class="capcut-chip">Photos</span><span class="capcut-chip hot">Format 9:16</span></div>
+                <div class="capcut-timeline"><div class="capcut-tools"><span class="capcut-tool on">Format</span><span class="capcut-tool">Crop</span><span class="capcut-tool">Volume</span></div><div class="capcut-track"><span class="capcut-clip"></span><span class="capcut-clip"></span><span class="capcut-clip"></span></div><div class="capcut-audio"></div></div>
+              </div>
+            </div>
+            <div class="setup-label"><div class="step-pill">1</div><h3>Import + 9:16</h3></div>
+            <p>เปิด <span class="kw">New project</span> นำเข้าคลิปอาหาร แล้วตั้งเฟรมเป็น <span class="kw">9:16</span></p>
+          </div>
+          <div class="setup-step">
+            <div class="setup-mock capcut-mock" aria-label="หน้าจอ CapCut เมนู Split และ Timeline">
+              <div class="capcut-shot">
+                <div class="capcut-top"><span class="capcut-brand">CapCut</span><span>Timeline · Split clips</span><span class="capcut-export">Export</span></div>
+                <div class="capcut-rail"><span class="capcut-tab on">Media</span><span class="capcut-tab">Audio</span><span class="capcut-tab">Text</span><span class="capcut-tab">Captions</span></div>
+                <div class="capcut-stage"><div class="capcut-phone"></div><span class="capcut-call">Split</span></div>
+                <div class="capcut-panel"><span class="capcut-chip hot">Split</span><span class="capcut-chip">Trim handles</span><span class="capcut-chip">Speed</span></div>
+                <div class="capcut-timeline"><div class="capcut-tools"><span class="capcut-tool on">Split</span><span class="capcut-tool">Delete</span><span class="capcut-tool">Speed</span></div><div class="capcut-track"><span class="capcut-clip"></span><span class="capcut-clip" style="outline:2px solid #ff3347"></span><span class="capcut-clip"></span></div><div class="capcut-audio"></div></div>
+              </div>
+            </div>
+            <div class="setup-label"><div class="step-pill">2</div><h3>Split + Timeline</h3></div>
+            <p>ใช้ <span class="kw">Split</span> ตัดช่วงไม่ใช้ แล้วเรียงคลิปใน <span class="kw">Timeline</span> ให้กระชับ</p>
+          </div>
+          <div class="setup-step">
+            <div class="setup-mock capcut-mock" aria-label="หน้าจอ CapCut เมนู Text Auto captions และ Export">
+              <div class="capcut-shot">
+                <div class="capcut-top"><span class="capcut-brand">CapCut</span><span>Text · Auto captions</span><span class="capcut-export">Export</span></div>
+                <div class="capcut-rail"><span class="capcut-tab">Media</span><span class="capcut-tab">Audio</span><span class="capcut-tab on">Text</span><span class="capcut-tab on">Captions</span></div>
+                <div class="capcut-stage"><div class="capcut-phone"></div><span class="capcut-call">Auto captions</span></div>
+                <div class="capcut-panel"><span class="capcut-chip hot">Auto captions</span><span class="capcut-chip">Text style</span><span class="capcut-chip hot">Export 1080p</span></div>
+                <div class="capcut-timeline"><div class="capcut-tools"><span class="capcut-tool on">Text</span><span class="capcut-tool on">Captions</span><span class="capcut-tool">Share</span></div><div class="capcut-track"><span class="capcut-clip"></span><span class="capcut-clip"></span><span class="capcut-clip"></span></div><div class="capcut-audio"></div></div>
+              </div>
+            </div>
+            <div class="setup-label"><div class="step-pill">3</div><h3>Auto captions + Export</h3></div>
+            <p>ใช้ <span class="kw">Text → Auto captions</span> แล้ว Export 1080p ก่อนโพสต์ TikTok</p>
+          </div>
+        </div>
+        <div class="formula"><span data-icon="star"></span>Workshop: ตัดคลิปร้านอาหาร 1 คลิปใน CapCut — Import → Split → Auto captions → Export</div>
+      </div>
+    </section>
+
+    <!-- WS · ลงมือทำ -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Workshop / ลงมือทำ</div>
+        <h2>โจทย์: ตัดคลิปเมนูเด่น <span class="highlight">15 วินาที</span> ภายใน 7 นาที</h2>
+        <div class="grid two" style="flex:1; align-content:center;">
+          <div class="card accent-red"><span class="ic" data-icon="caption"></span><strong>สิ่งที่ต้องทำ</strong><p>① เลือกคลิปอาหารในมือถือ 2–3 ช็อต<br>② เอาช็อตน่ากินสุดขึ้นวิแรก<br>③ ตัดเหลือ 15 วิ ใส่ Hook ตัวหนังสือ<br>④ <span class="kw-red">ใส่เพลง หรือ พากย์เสียง</span> บรรยาย + ที่อยู่ร้าน</p></div>
+          <div class="card accent-green"><span class="ic" data-icon="checklist"></span><strong>เกณฑ์ผ่าน</strong><p>• 3 วิแรกเห็นอาหารน่ากินทันที<br>• มี Hook ตัวหนังสือบนจอ<br>• มีเพลง/พากย์เสียง + ที่อยู่ร้าน<br>• ความยาวไม่เกิน 20 วิ</p></div>
+        </div>
+        <div class="formula"><span data-icon="star"></span>ให้เวลา 7 นาที แล้วสุ่ม 2–3 คนโชว์ผลงานบนจอ — ติชมร่วมกัน</div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 04 · KOL รีวิวร้าน ===== -->
+    <section class="slide dark divider-slide">
+      <div class="content">
+        <div class="divider-visual">
+          <div class="divider-num" data-num="04">04</div>
+          <img class="divider-mascot" src="Tidjaruad Branded Asset/tidjaruad-brand-assets/04-mascot-pointing-target.png" alt="">
+        </div>
+        <div class="divider-body">
+          <div class="divider-label"><span class="divider-step">Section 04</span><span class="divider-eyebrow">KOL / Influencer</span></div>
+          <h2 class="divider-title"><span class="divider-accent">ใช้ KOL รีวิวร้าน</span><br>ให้คนอื่นช่วยปั้นยอด</h2>
+          <p class="divider-sub">นอกจากทำคลิปเอง ให้รีวิวเวอร์สายกินมาช่วยพูดแทน — เพิ่มความน่าเชื่อถือและเข้าถึงคนใหม่ ๆ ที่เราเข้าไม่ถึง</p>
+          <div class="divider-meta"><span class="chip chip-hero">เลือก KOL ให้ตรง</span><span class="chip">ดีล + บรีฟ</span><span class="chip">วัดผลคุ้มไหม</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KOL · ประเภท + เลือก -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">KOL / เลือกให้ถูก</div>
+        <h2>ไม่ต้องดังที่สุด — ต้อง <span class="highlight">ตรงกลุ่มที่สุด</span></h2>
+        <div class="grid four" style="flex:1; align-content:center;">
+          <div class="card accent-green"><span class="ic" data-icon="place"></span><strong>รีวิวเวอร์ท้องถิ่น</strong><p>เพจ "ของกินย่าน..." คนตามคือคนในพื้นที่ — คุ้มสุด เพราะคนตามมาร้านได้จริง</p></div>
+          <div class="card accent-blue"><span class="ic" data-icon="food"></span><strong>สายรีวิวอาหาร</strong><p>คนตามเพราะชอบดูของกิน เชื่อรสนิยม — เหมาะดันเมนูซิกเนเจอร์</p></div>
+          <div class="card accent-yellow"><span class="ic" data-icon="family"></span><strong>Nano/Micro</strong><p>ผู้ติดตามหลักพัน–หมื่น เอนเกจสูง ราคาเข้าถึงได้ — เริ่มกลุ่มนี้ก่อนเจ้าใหญ่</p></div>
+          <div class="card accent-red"><span class="ic" data-icon="voice"></span><strong>ลูกค้าจริงรีวิว (UGC)</strong><p>ลูกค้าที่มากินแล้วถ่ายรีวิวเอง — น่าเชื่อถือสุด ต้นทุนต่ำ ชวนรีวิวแลกส่วนลด/ของแถม</p></div>
+        </div>
+        <div class="formula">เช็กก่อนดีล: คนตามอยู่ <b>ใกล้ร้านไหม</b> · คลิปเก่ามี <b>คนถามทางจริงไหม</b> (ไม่ใช่แค่ยอดติดตามสวย)</div>
+      </div>
+    </section>
+
+    <!-- KOL · ทำงานให้คุ้ม -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">KOL / ทำงานให้คุ้ม</div>
+        <h2>ทำงานกับ KOL ให้ได้ <span class="highlight">ยอดขายกลับมา</span></h2>
+        <div class="setup-grid">
+          <div class="setup-step">
+            <div class="setup-mock photo-real"><img src="generated-realistic-assets/kol-review-filming.png" alt="อินฟลูเอนเซอร์รีวิวอาหารในร้านด้วยมือถือแนวตั้ง"></div>
+            <div class="setup-label"><div class="step-pill">1</div><h3>ดีลแบบไหน</h3></div>
+            <p>เริ่มจาก <span class="kw">เชิญมากินฟรี</span> แลกรีวิว ถ้าเวิร์กค่อยจ่ายเป็นรอบ — ตกลงจำนวนคลิป/สตอรี่ให้ชัด</p>
+          </div>
+          <div class="setup-step">
+            <div class="setup-mock photo-real"><img src="generated-realistic-assets/kol-briefing.png" alt="เจ้าของร้านบรีฟอินฟลูเอนเซอร์ด้วยเมนูและจุดขาย"></div>
+            <div class="setup-label"><div class="step-pill">2</div><h3>บรีฟให้ครบ</h3></div>
+            <p>บอก <span class="kw">เมนูเด่น ราคา ที่อยู่ จุดขาย</span> + ขอให้ติดแท็ก/ปักหมุดร้าน แต่ปล่อยสไตล์ให้เป็นธรรมชาติ</p>
+          </div>
+          <div class="setup-step">
+            <div class="setup-mock photo-real"><img src="generated-realistic-assets/kol-results-dashboard.png" alt="ดูผลลัพธ์แคมเปญอินฟลูเอนเซอร์บนแดชบอร์ด"></div>
+            <div class="setup-label"><div class="step-pill">3</div><h3>วัดผล</h3></div>
+            <p>ใช้ <span class="kw">โค้ด/เมนูเฉพาะ KOL</span> + ถามลูกค้าหน้าร้าน เพื่อรู้ว่าคนนี้พาคนมาจริงไหม คุ้มจ้างซ้ำไหม</p>
+          </div>
+        </div>
+        <div class="formula"><span data-icon="star"></span>ขออนุญาต KOL <b>นำคลิปรีวิวมายิงแอด</b> ต่อได้ — รีวิวจากคนจริงมักทำยอดดีกว่าคลิปร้านทำเอง</div>
+      </div>
+    </section>
+
+    <!-- DIVIDER 05 · ADS -->
+    <section class="slide dark divider-slide">
+      <div class="content">
+        <div class="divider-visual">
+          <div class="divider-num" data-num="05">05</div>
+          <img class="divider-mascot" src="Tidjaruad Branded Asset/tidjaruad-brand-assets/02-mascot-flying-jetpack.png" alt="">
+        </div>
+        <div class="divider-body">
+          <div class="divider-label"><span class="divider-step">Section 05</span><span class="divider-eyebrow">TikTok Ads</span></div>
+          <h2 class="divider-title"><span class="divider-accent">ยิงแอด TikTok</span><br>ขยายให้คนเห็นมากขึ้น</h2>
+          <p class="divider-sub">คลิปดีแต่คนไม่เห็นก็ขายไม่ได้ — เราจะเรียนวิธียิงแอดง่าย ๆ เพื่อดันคลิปที่ปังให้ไปถึงคนใกล้ร้านมากขึ้น</p>
+          <div class="divider-meta"><span class="chip chip-hero">Boost vs Ads</span><span class="chip">ยิงสู่กลุ่มเป้าหมาย</span><span class="chip">งบ + อ่านผล</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 17 WHY ADS -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Ads / ทำไมต้องยิง</div>
+        <h2>Organic อย่างเดียว <span class="kw-red">ช้าและไม่แน่นอน</span></h2>
+        <div class="grid two" style="flex:1; align-content:center;">
+          <div class="card accent-red"><span class="ic" data-icon="dice"></span><strong>รอฟีดดันเอง = ดวง</strong><p>บางคลิปปัง บางคลิปเงียบ — ควบคุมไม่ได้ และคนที่เห็นอาจไม่ได้อยู่ใกล้ร้านเรา</p></div>
+          <div class="card accent-green"><span class="ic" data-icon="target"></span><strong>ยิงแอด = เลือกได้</strong><p>เลือกได้ว่าให้ <span class="kw">ใคร ที่ไหน เห็นกี่คน</span> — ดันคลิปที่ดีอยู่แล้วให้ถึงคนใกล้ร้านโดยตรง</p></div>
+        </div>
+        <div class="formula">สูตรง่าย: ทำคลิปออร์แกนิกหา "คลิปที่คนชอบ" → แล้ว <b>เอาเงินดันคลิปนั้น</b> ให้ไปไกลขึ้น</div>
+      </div>
+    </section>
+
+    <!-- 18 BOOST VS ADS -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Ads / 2 วิธียิง</div>
+        <h2>2 วิธียิงแอด — <span class="highlight">เริ่มจากง่ายก่อน</span></h2>
+        <div class="grid two" style="flex:1; align-content:center;">
+          <div class="card accent-blue"><span class="ic" data-icon="boost"></span><strong>Boost (ปุ่มโปรโมท)</strong><p>กดดันคลิปที่โพสต์ไปแล้วในแอป — ตั้งง่ายใน 1 นาที เหมาะกับ <span class="kw">มือใหม่</span> และดันคลิปที่เริ่มปัง</p></div>
+          <div class="card accent-red"><span class="ic" data-icon="ads"></span><strong>Ads Manager</strong><p>ระบบยิงแอดเต็มรูปแบบบนเว็บ — เลือกเป้าหมาย/กลุ่ม/งบละเอียด เหมาะกับคน <span class="kw">เริ่มจริงจัง</span></p></div>
+        </div>
+        <div class="formula">แนะนำสำหรับวันนี้: เริ่มที่ <b>Boost</b> กับคลิปที่ยอดวิวเริ่มดี — ได้ผลไว เห็นภาพก่อนขยับไป Ads Manager</div>
+      </div>
+    </section>
+
+    <!-- 19 FIRST CAMPAIGN -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Ads / แคมเปญแรก</div>
+        <h2>ตั้งแคมเปญแรกของร้านใน <span class="highlight">3 ขั้น</span></h2>
+        <div class="setup-grid">
+          <div class="setup-step">
+            <div class="setup-mock photo-real"><img src="generated-realistic-assets/ads-objective.png" alt="เลือกเป้าหมายแคมเปญโฆษณาร้านอาหาร"></div>
+            <div class="setup-label"><div class="step-pill">1</div><h3>เลือกเป้าหมาย</h3></div>
+            <p>มือใหม่เริ่มที่ <span class="kw">ยอดวิว/การเข้าถึง</span> เพื่อให้คนเห็นเยอะ หรือ <span class="kw">ข้อความ/โปรไฟล์</span> ถ้าอยากให้ทัก</p>
+          </div>
+          <div class="setup-step">
+            <div class="setup-mock photo-real"><img src="generated-realistic-assets/ads-local-radius.png" alt="เลือกพื้นที่รัศมีรอบร้านสำหรับยิงแอด"></div>
+            <div class="setup-label"><div class="step-pill">2</div><h3>เลือกกลุ่ม</h3></div>
+            <p>ตั้ง <span class="kw">พื้นที่รอบร้าน</span> + อายุ/ความสนใจเรื่องอาหาร — อย่ายิงทั้งประเทศ</p>
+          </div>
+          <div class="setup-step">
+            <div class="setup-mock photo-real"><img src="generated-realistic-assets/ads-budget.png" alt="ตั้งงบรายวันสำหรับโฆษณาคลิปอาหาร"></div>
+            <div class="setup-label"><div class="step-pill">3</div><h3>ตั้งงบ + ปล่อย</h3></div>
+            <p>เริ่ม <span class="kw">฿100–300/วัน</span> ทดสอบ 3–5 วัน (รวม ~฿500–1,500) ดูว่าคลิปไหนคุ้มสุด ค่อยเพิ่มงบ</p>
+          </div>
+        </div>
+        <div class="formula">เริ่มเล็ก เรียนรู้เร็ว — งบทดสอบ <b>฿500–1,500</b> พอหา "คลิปตัวชนะ" แล้วค่อยเทงบเพิ่มทีหลัง</div>
+      </div>
+    </section>
+
+    <!-- 20 TARGETING TO AUDIENCE + TESTING -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Ads / กลุ่มเป้าหมาย</div>
+        <h2>ยิงแอดสู่ <span class="highlight">กลุ่มเป้าหมาย</span> ที่ใช่</h2>
+        <div class="grid four" style="flex:1; align-content:center;">
+          <div class="card accent-blue"><span class="ic" data-icon="place"></span><strong>ทำเลใกล้ร้าน</strong><p>เลือกพื้นที่/เมืองรอบร้าน — เน้นคนที่ "มาได้จริง" ไม่ยิงทั้งประเทศ</p></div>
+          <div class="card accent-red"><span class="ic" data-icon="food"></span><strong>ความสนใจ</strong><p>คนสนใจอาหาร/คาเฟ่/รีวิวร้าน — ตรงกับสิ่งที่เราขาย</p></div>
+          <div class="card accent-yellow"><span class="ic" data-icon="person"></span><strong>อายุ/เพศ/เวลา</strong><p>ปรับให้ตรงลูกค้าหลัก + ยิงช่วงก่อนมื้ออาหารที่คนหิว</p></div>
+          <div class="card accent-green"><span class="ic" data-icon="family"></span><strong>คล้ายลูกค้าเดิม</strong><p>กลุ่มที่พฤติกรรมคล้ายคนที่เคยทัก/สั่ง — ขยายจากของจริง</p></div>
+        </div>
+        <div class="formula"><span data-icon="star"></span>หัวใจ: <b>ทดสอบหลายคลิป × หลายกลุ่ม</b> → เจอ "ตัวที่ดี" แล้วเทงบไปต่อ · <span class="kw-red">เติมคลิปใหม่และปรับแอดอยู่เสมอ</span></div>
+      </div>
+    </section>
+
+    <!-- 21 BUDGET & METRICS -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Ads / งบ & ตัวเลข</div>
+        <h2>งบเริ่มต้น + ตัวเลขที่ <span class="highlight">ต้องดูจริง</span></h2>
+        <div class="grid four" style="flex:1; align-content:center;">
+          <div class="card accent-blue"><span class="ic" data-icon="eye"></span><strong>ยอดเข้าถึง</strong><p>คนเห็นคลิปกี่คน — ตัวบอกว่าแอด "กระจาย" ดีไหม</p></div>
+          <div class="card accent-yellow"><span class="ic" data-icon="play"></span><strong>อัตราดูจบ</strong><p>คนดูถึงท้ายเยอะ = คลิปดี ควรเทงบเพิ่ม</p></div>
+          <div class="card accent-red"><span class="ic" data-icon="chat"></span><strong>คอมเมนต์/ทัก</strong><p>คนถามเมนู/ที่อยู่ = สัญญาณว่าจะมา</p></div>
+          <div class="card accent-green"><span class="ic" data-icon="receipt"></span><strong>ต้นทุนต่อผล</strong><p>จ่ายเท่าไรต่อ 1 วิว/1 ทัก — ยิ่งถูกยิ่งคุ้ม</p></div>
+        </div>
+        <div class="formula">อย่าดูแค่ยอดวิว — ดู <b>ต้นทุนต่อผล</b> และ "คนทักถามทาง" คือสัญญาณยอดขายที่แท้จริง</div>
+      </div>
+    </section>
+
+    <!-- 22 ADS RULES -->
+    <section class="slide rules-slide">
+      <div class="content">
+        <div class="rules-topbar">
+          <div class="eyebrow">Ads / ข้อควรระวัง</div>
+          <span class="rules-important"><span data-icon="warning"></span>IMPORTANT · อ่านให้ครบ</span>
+        </div>
+        <h2 style="font-size:clamp(33.8px, 3.51vw, 44.2px);">กฎ & ข้อควรระวัง การยิงแอด</h2>
+        <div class="rule-grid">
+          <div class="rule-card rule-card-ok"><div class="rule-icon" data-icon="check"></div><strong>ยิงคลิปที่พิสูจน์แล้ว</strong><p>ดันคลิปที่ออร์แกนิกเริ่มดี คุ้มกว่า</p></div>
+          <div class="rule-card rule-card-ok"><div class="rule-icon" data-icon="check"></div><strong>ตั้งงบที่ไหวต่อวัน</strong><p>เริ่มเล็ก ทดสอบ แล้วค่อยเพิ่ม</p></div>
+          <div class="rule-card rule-card-ok"><div class="rule-icon" data-icon="check"></div><strong>ทดสอบหลายคลิป</strong><p>ให้ระบบหา "ตัวชนะ" ก่อนเทงบ</p></div>
+          <div class="rule-card"><div class="rule-icon" data-icon="xmark"></div><strong>อย่ายิงทั้งประเทศ</strong><p>เปลืองงบกับคนที่มาร้านไม่ได้</p></div>
+          <div class="rule-card"><div class="rule-icon" data-icon="xmark"></div><strong>อย่าเปลี่ยนงบรัว ๆ</strong><p>ให้แอดได้เรียนรู้ก่อน 2–3 วัน</p></div>
+          <div class="rule-card rule-card-warn"><div class="rule-icon" data-icon="warning"></div><strong>เลี่ยงคำผิดนโยบาย</strong><p>คำอวดอ้าง/ก่อนหลังเกินจริงถูกแบนแอดได้</p><div class="rule-disclaimer">* ทำตามนโยบายโฆษณา TikTok และ อย. เสมอ</div></div>
+        </div>
+        <div class="rule-formula">
+          <span class="rule-formula-head"><span data-icon="timer"></span>เช็กก่อนกดยิง</span>
+          <span class="rf-check"><span data-icon="check"></span>ตั้งพื้นที่รอบร้านแล้ว</span>
+          <span class="rf-check"><span data-icon="check"></span>งบไหวต่อวัน</span>
+          <span class="rf-check"><span data-icon="check"></span>คลิปไม่ผิดนโยบาย</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 23 DIVIDER 04 -->
+    <section class="slide dark divider-slide">
+      <div class="content">
+        <div class="divider-visual">
+          <div class="divider-num" data-num="06">06</div>
+          <img class="divider-mascot" src="Tidjaruad Branded Asset/tidjaruad-brand-assets/01-mascot-hero.png" alt="">
+        </div>
+        <div class="divider-body">
+          <div class="divider-label"><span class="divider-step">Section 06</span><span class="divider-eyebrow">Conversion</span></div>
+          <h2 class="divider-title"><span class="divider-accent">เปลี่ยนยอดวิว</span><br>เป็นยอดขายจริง</h2>
+          <p class="divider-sub">ยอดวิวสวยแต่ร้านเงียบ = ยังไม่จบงาน — เราจะปิดท้ายด้วยการเปลี่ยนคนดูให้เดินเข้าร้าน วัดผล และทำให้ต่อเนื่อง</p>
+          <div class="divider-meta"><span class="chip chip-hero">วิว → เข้าร้าน</span><span class="chip">โปร/CTA</span><span class="chip">วัดผล + สม่ำเสมอ</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 24 FUNNEL -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Conversion / เส้นทางลูกค้า</div>
+        <h2>จากคนไถเจอ → <span class="highlight">เดินเข้าร้าน</span></h2>
+        <div class="journey-flow" style="grid-template-columns:1fr 30px 1fr 30px 1fr 30px 1fr; flex:1; align-content:center;">
+          <div class="journey-step"><div class="journey-num">1</div><b>เห็นคลิป</b><span>Hook ทำให้หยุดดู</span></div>
+          <div class="journey-arrow">→</div>
+          <div class="journey-step"><div class="journey-num">2</div><b>อยากกิน</b><span>ภาพน่ากิน + ราคาคุ้ม</span></div>
+          <div class="journey-arrow">→</div>
+          <div class="journey-step"><div class="journey-num">3</div><b>รู้ว่าไปไหน</b><span>ที่อยู่/แผนที่/เวลาเปิด</span></div>
+          <div class="journey-arrow">→</div>
+          <div class="journey-step journey-step-hero"><div class="journey-num">4</div><b>มาร้าน/สั่ง</b><span>CTA + โปรกระตุ้น</span></div>
+        </div>
+        <div class="formula">ทุกคลิปต้องพาคนเดินครบ 4 ขั้น — ขาดขั้นไหน คนก็หลุดที่ขั้นนั้น</div>
+      </div>
+    </section>
+
+    <!-- 25 OFFER / CTA -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Conversion / โปร & CTA</div>
+        <h2>โปร & คำชวนที่ <span class="highlight">ทำให้คนมาวันนี้</span></h2>
+        <div class="grid three" style="flex:1; align-content:center;">
+          <div class="card accent-red"><span class="ic" data-icon="clock"></span><strong>มีเงื่อนเวลา</strong><p>"เฉพาะสัปดาห์นี้" / "ก่อน 5 โมง" — ความเร่งทำให้คนรีบมา ไม่ผัดวัน</p></div>
+          <div class="card accent-yellow"><span class="ic" data-icon="gift"></span><strong>ให้เหตุผลมา</strong><p>เซ็ตคู่คุ้ม / ของแถมเมื่อบอกโค้ดจากคลิป — ทำให้ตัดสินใจง่าย</p></div>
+          <div class="card accent-blue"><span class="ic" data-icon="map"></span><strong>บอกทางให้ชัด</strong><p>พิกัด ปุ่มแผนที่ จุดสังเกต ที่จอดรถ — ลดความลังเล "หายากไหม"</p></div>
+        </div>
+        <div class="formula">ปิดคลิปด้วยประโยคเดียวที่ชัด: "<b>แวะมาวันนี้ บอกว่าเห็นจาก TikTok รับ...</b>"</div>
+      </div>
+    </section>
+
+    <!-- 26 MEASURE -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Conversion / วัดผล</div>
+        <h2>รู้ให้ได้ว่า <span class="highlight">คลิป/แอดไหนขายได้จริง</span></h2>
+        <div class="grid three" style="flex:1; align-content:center;">
+          <div class="card accent-blue"><span class="ic" data-icon="ask"></span><strong>ถามหน้าร้าน</strong><p>"รู้จักร้านจากไหน?" — วิธีที่ง่ายและแม่นสุดสำหรับร้านอาหาร</p></div>
+          <div class="card accent-yellow"><span class="ic" data-icon="tag"></span><strong>โค้ด/เมนูลับ</strong><p>ตั้งโค้ดเฉพาะจากคลิป เช่น "พูดว่าหมูกรอบ" — นับได้ว่ามาจาก TikTok</p></div>
+          <div class="card accent-green"><span class="ic" data-icon="growth"></span><strong>ดูสถิติในแอป</strong><p>คลิปไหนคนกดดูโปรไฟล์/ทักเยอะ = คลิปที่พาคนมา ทำซ้ำแนวนั้น</p></div>
+        </div>
+        <div class="formula">ทำซ้ำสิ่งที่ได้ผล หยุดสิ่งที่ไม่ได้ผล — นี่คือสิ่งที่ทำให้ร้านโตขึ้นทุกเดือน</div>
+      </div>
+    </section>
+
+    <!-- 27 CONSISTENCY / CALENDAR -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Conversion / ทำให้ต่อเนื่อง</div>
+        <h2>ปฏิทินคลิป <span class="highlight">1 สัปดาห์</span> ที่ทำไหวจริง</h2>
+        <div class="setup-grid setup-grid-4 calendar-cards">
+          <div class="setup-step"><div class="setup-mock photo-real photo-low"><img src="generated-realistic-assets/calendar-signature-menu.png" alt="วางแผนถ่ายเมนูซิกเนเจอร์ประจำสัปดาห์"></div><div class="setup-label"><div class="step-pill">จ</div><h3>เมนูเด่น</h3></div><p>โชว์ซิกเนเจอร์ยั่วน้ำลาย</p></div>
+          <div class="setup-step"><div class="setup-mock photo-real"><img src="generated-realistic-assets/calendar-behind-scenes.png" alt="ถ่ายเบื้องหลังครัวและวัตถุดิบของร้าน"></div><div class="setup-label"><div class="step-pill">พ</div><h3>เบื้องหลัง</h3></div><p>ครัว/วัตถุดิบ/การทำ</p></div>
+          <div class="setup-step"><div class="setup-mock photo-real photo-low"><img src="generated-realistic-assets/calendar-customer-review.png" alt="ถ่ายรีวิวลูกค้าและปฏิกิริยาจริงในร้าน"></div><div class="setup-label"><div class="step-pill">ศ</div><h3>รีวิว/ลูกค้า</h3></div><p>ปฏิกิริยาจริง/คิวร้าน</p></div>
+          <div class="setup-step"><div class="setup-mock photo-real"><img src="generated-realistic-assets/calendar-promo-boost.png" alt="เลือกคลิปโปรโมชันเพื่อยิงแอดปลายสัปดาห์"></div><div class="setup-label"><div class="step-pill">อา</div><h3>โปร + ยิงแอด</h3></div><p>ดันคลิปที่ปังที่สุดของสัปดาห์</p></div>
+        </div>
+        <div class="formula">เริ่มที่ <b>3–4 คลิป/สัปดาห์</b> ก็พอ — สม่ำเสมอชนะลงเยอะแล้วหายไปเป็นเดือน</div>
+      </div>
+    </section>
+
+    <!-- 28 KEY TAKEAWAY -->
+    <section class="slide dark key-takeaway">
+      <div class="content">
+        <div class="eyebrow">Key Take Away</div>
+        <h2 class="kt-headline">3 เรื่องที่ต้องจำกลับบ้าน</h2>
+        <div class="kt-grid" style="flex:1; align-content:center;">
+          <div class="kt-card kt-card-1"><div class="kt-num">01</div><strong>คลิปต้องน่ากินใน 3 วิ</strong><p>เปิดด้วยช็อตยั่วที่สุด ใส่ที่อยู่ทุกคลิป — ทำให้ถูกเห็นและน่ากิน</p></div>
+          <div class="kt-card kt-card-2"><div class="kt-num">02</div><strong>ยิงแอดหาคนใกล้ร้าน</strong><p>ดันคลิปที่ดีอยู่แล้ว เฉพาะรัศมีรอบร้าน เริ่มงบเล็ก ดูต้นทุนต่อผล</p></div>
+          <div class="kt-card kt-card-3"><div class="kt-num">03</div><strong>วัดผล + ทำซ้ำ</strong><p>ถามลูกค้ามาจากไหน ทำซ้ำคลิปที่พาคนมา ลงให้สม่ำเสมอ</p></div>
+        </div>
+        <div class="kt-formula">
+          <span class="kt-fchip">ถูกเห็น</span><span class="kt-arrow">→</span>
+          <span class="kt-fchip">น่ากิน</span><span class="kt-arrow">→</span>
+          <span class="kt-fchip">มาที่ร้าน</span><span class="kt-arrow">→</span>
+          <span class="kt-fchip kt-fchip-hero">ยอดขายโต</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 29 30-DAY PLAN -->
+    <section class="slide">
+      <div class="content">
+        <div class="eyebrow">Action Plan</div>
+        <h2>แผน <span class="highlight">30 วันแรก</span> ของร้านคุณ</h2>
+        <div class="journey-flow" style="grid-template-columns:1fr 30px 1fr 30px 1fr 30px 1fr; flex:1; align-content:center;">
+          <div class="journey-step"><div class="journey-num">1</div><b>สัปดาห์ 1</b><span>ตั้งโปรไฟล์ Business + ปักหมุดร้าน + ลง 3 คลิปเมนูเด่น</span></div>
+          <div class="journey-arrow">→</div>
+          <div class="journey-step"><div class="journey-num">2</div><b>สัปดาห์ 2</b><span>ลองทุกประเภทคลิป หา Hook ที่คนชอบ ดูสถิติ</span></div>
+          <div class="journey-arrow">→</div>
+          <div class="journey-step"><div class="journey-num">3</div><b>สัปดาห์ 3</b><span>Boost คลิปที่ปังที่สุด ยิงรัศมีรอบร้าน งบเล็ก</span></div>
+          <div class="journey-arrow">→</div>
+          <div class="journey-step journey-step-hero"><div class="journey-num">4</div><b>สัปดาห์ 4</b><span>วัดผล ถามลูกค้า ทำซ้ำตัวที่เวิร์ก วางปฏิทินถัดไป</span></div>
+        </div>
+        <div class="formula">ไม่ต้องสมบูรณ์แบบ — <b>เริ่มลงมือวันนี้</b> แล้วปรับไปเรื่อย ๆ คือทางที่เร็วที่สุด</div>
+      </div>
+    </section>
+
+    <!-- 30 CLOSING CTA -->
+    <section class="slide dark quote-slide">
+      <div class="content">
+        <div class="eyebrow">Let's Go</div>
+        <h2 class="hero-quote">ร้านคุณพร้อมแล้ว<br><span class="accent">ลงคลิปแรกวันนี้เลย</span></h2>
+        <p class="quote-sub">คุณมีของอร่อยอยู่แล้ว เหลือแค่ทำให้คนเห็น — ใช้สิ่งที่เรียนวันนี้ เริ่มจากคลิปเดียว แล้วต่อยอดไปเรื่อย ๆ</p>
+        <div class="cta-box">
+          <div class="cta-txt"><b>เริ่มที่ 1 คลิป + 1 โปร</b><span>ทำตามแผน 30 วัน แล้วกลับมาดูผลด้วยกัน</span></div>
+          <div class="cta-badge">TIDJARUAD GROWTH SYSTEM</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="presentation-pointer" id="presentationPointer" aria-hidden="true"></div>
+
+  <div class="vlightbox" id="vlightbox" aria-hidden="true">
+    <button class="vlb-close" id="vlbClose" aria-label="ปิด">&times;</button>
+    <div id="vlbHost"></div>
+    <div class="vlb-hint">กดปุ่มปิด หรือ Esc เพื่อปิด</div>
+  </div>
+
+  <div class="controls" aria-label="Slide controls">
+    <button id="prev" title="ก่อนหน้า" aria-label="ก่อนหน้า">&lsaquo;</button>
+    <div class="counter" id="counter">1 / 1</div>
+    <button id="next" title="ถัดไป" aria-label="ถัดไป">&rsaquo;</button>
+    <button class="tool-button" id="pointerToggle" title="Mouse pointer (P)" aria-label="Mouse pointer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l9 18 2-7 6-2L5 3z"></path></svg>
+    </button>
+    <button class="tool-button" id="fullscreenToggle" title="Fullscreen (F)" aria-label="Fullscreen">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8 3H3v5"></path><path d="M16 3h5v5"></path>
+        <path d="M21 16v5h-5"></path><path d="M8 21H3v-5"></path>
+      </svg>
+    </button>
+  </div>
+
+  <script>
+    const iconSet = {
+      ads: '<rect x="4" y="5" width="16" height="14" rx="3"></rect><path d="M8 9h8M8 13h5M17 13l2 2"></path>',
+      ask: '<path d="M12 20v-3"></path><path d="M9 9a3 3 0 1 1 5.1 2.1c-.9.8-2.1 1.3-2.1 2.9"></path><circle cx="12" cy="12" r="9"></circle>',
+      behind: '<rect x="4" y="6" width="16" height="12" rx="3"></rect><path d="M9 6l2 12M15 6l-2 12"></path>',
+      boost: '<path d="M13 2L5 14h6l-1 8 8-12h-6l1-8z"></path>',
+      budget: '<path d="M12 2v20"></path><path d="M17 6H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"></path>',
+      caption: '<path d="M5 6h14M5 11h10M5 16h7"></path><path d="M18 15l1 4-4-1"></path>',
+      chart: '<path d="M4 19V5"></path><path d="M4 19h16"></path><path d="M8 16v-5M12 16V8M16 16v-8"></path>',
+      chat: '<path d="M5 5h14a3 3 0 0 1 3 3v5a3 3 0 0 1-3 3h-6l-5 4v-4H5a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3z"></path><path d="M7 9h10M7 12h6"></path>',
+      check: '<path d="M20 6L9 17l-5-5"></path>',
+      checklist: '<path d="M9 6h11M9 12h11M9 18h11"></path><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"></path>',
+      clock: '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>',
+      compass: '<circle cx="12" cy="12" r="9"></circle><path d="M15 9l-2 5-5 2 2-5 5-2z"></path>',
+      dice: '<rect x="4" y="4" width="16" height="16" rx="4"></rect><circle cx="9" cy="9" r="1"></circle><circle cx="15" cy="15" r="1"></circle><circle cx="15" cy="9" r="1"></circle><circle cx="9" cy="15" r="1"></circle>',
+      eye: '<path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle>',
+      family: '<circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M3 20a5 5 0 0 1 10 0"></path><path d="M11 20a5 5 0 0 1 10 0"></path>',
+      food: '<path d="M7 3v8"></path><path d="M4 3v8a3 3 0 0 0 6 0V3"></path><path d="M17 3v18"></path><path d="M14 3h5v9h-5z"></path>',
+      gift: '<rect x="4" y="9" width="16" height="11" rx="2"></rect><path d="M4 13h16M12 9v11"></path><path d="M12 9C9 9 7 8 7 6.5S8.2 4 10 4c1.4 0 2 1.4 2 5z"></path><path d="M12 9c3 0 5-1 5-2.5S15.8 4 14 4c-1.4 0-2 1.4-2 5z"></path>',
+      growth: '<path d="M4 18l5-5 4 3 7-8"></path><path d="M15 8h5v5"></path>',
+      hashtag: '<path d="M9 3L7 21M17 3l-2 18M4 8h17M3 16h17"></path>',
+      handshake: '<path d="M8 12l3 3a3 3 0 0 0 4 0l5-5"></path><path d="M2 12l5-5 4 4"></path><path d="M22 12l-5-5-3 3"></path><path d="M7 17l-2 2M17 17l2 2"></path>',
+      image: '<rect x="4" y="5" width="16" height="14" rx="3"></rect><circle cx="9" cy="10" r="2"></circle><path d="M20 16l-5-5-4 4-2-2-5 5"></path>',
+      live: '<circle cx="12" cy="12" r="3"></circle><path d="M7 7a7 7 0 0 0 0 10M17 7a7 7 0 0 1 0 10"></path><path d="M4 4a11 11 0 0 0 0 16M20 4a11 11 0 0 1 0 16"></path>',
+      map: '<path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3z"></path><path d="M9 3v15M15 6v15"></path>',
+      megaphone: '<path d="M4 13h3l10 4V7L7 11H4v2z"></path><path d="M7 13l2 6h3"></path>',
+      mobile: '<rect x="7" y="2" width="10" height="20" rx="3"></rect><path d="M11 18h2"></path>',
+      music: '<path d="M9 18V5l10-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="16" cy="16" r="3"></circle>',
+      pan: '<path d="M4 14h11a4 4 0 0 0 0-8H8"></path><path d="M15 14l5 5"></path><path d="M7 10h8"></path>',
+      person: '<circle cx="12" cy="7" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path>',
+      phone: '<path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><path d="M10 18h4"></path>',
+      place: '<path d="M12 21s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle>',
+      plate: '<circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="4"></circle><path d="M3 3l4 4M21 3l-4 4"></path>',
+      play: '<circle cx="12" cy="12" r="9"></circle><path d="M10 8l6 4-6 4V8z"></path>',
+      puzzle: '<path d="M8 3h5v4a2 2 0 1 0 4 0h3v5h-4a2 2 0 1 0 0 4h4v5H3v-5h4a2 2 0 1 0 0-4H3V7h5V3z"></path>',
+      receipt: '<path d="M6 3h12v18l-2-1-2 1-2-1-2 1-2-1-2 1V3z"></path><path d="M9 8h6M9 12h6M9 16h4"></path>',
+      rocket: '<path d="M5 19c1-4 4-8 8-11 3-2 6-3 6-3s-1 3-3 6c-3 4-7 7-11 8z"></path><path d="M9 15l-4 4M14 6l4 4"></path><circle cx="14" cy="10" r="1.5"></circle>',
+      scissors: '<circle cx="6" cy="7" r="3"></circle><circle cx="6" cy="17" r="3"></circle><path d="M8.5 8.5L20 20M8.5 15.5L20 4"></path>',
+      search: '<circle cx="10" cy="10" r="6"></circle><path d="M15 15l5 5"></path>',
+      sliders: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"></path><circle cx="16" cy="7" r="2"></circle><circle cx="8" cy="17" r="2"></circle>',
+      sound: '<path d="M4 14h4l5 4V6L8 10H4v4z"></path><path d="M16 9a5 5 0 0 1 0 6M19 6a9 9 0 0 1 0 12"></path>',
+      star: '<path d="M12 3l2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 16.9 6.6 19.8l1-6.1-4.4-4.3 6.1-.9L12 3z"></path>',
+      store: '<path d="M4 10h16l-1-5H5l-1 5z"></path><path d="M6 10v10h12V10"></path><path d="M9 20v-6h6v6"></path>',
+      tag: '<path d="M20 13l-7 7L4 11V4h7l9 9z"></path><circle cx="8.5" cy="8.5" r="1"></circle>',
+      target: '<circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1"></circle>',
+      text: '<path d="M4 6h16M9 6v12M15 6v12M7 18h10"></path>',
+      timer: '<circle cx="12" cy="13" r="8"></circle><path d="M12 13l3-3M9 2h6M12 5V2"></path>',
+      trend: '<path d="M4 17l6-6 4 4 6-8"></path><path d="M15 7h5v5"></path>',
+      video: '<rect x="3" y="6" width="13" height="12" rx="3"></rect><path d="M16 10l5-3v10l-5-3"></path>',
+      voice: '<path d="M5 12h4l5 5V7L9 12H5z"></path><path d="M17 9a4 4 0 0 1 0 6"></path>',
+      walk: '<circle cx="13" cy="4" r="2"></circle><path d="M11 8l-2 5-4 2"></path><path d="M12 9l4 3"></path><path d="M10 14l-2 7"></path><path d="M13 14l4 7"></path>',
+      warning: '<path d="M12 3l10 18H2L12 3z"></path><path d="M12 9v5M12 17h.01"></path>',
+      xmark: '<path d="M6 6l12 12M18 6L6 18"></path>'
+    };
+    const illustrationSet = {
+      contact: '<circle class="illo-blue-soft" cx="54" cy="55" r="32"></circle><rect class="illo-bg" x="76" y="20" width="66" height="72" rx="14"></rect><path class="illo-line" d="M95 34h28M96 75h24"></path><path class="illo-line-blue" d="M103 47c8 14 16 20 29 25"></path><path class="illo-line-red" d="M87 68l15-16 10 10"></path><circle class="illo-red" cx="149" cy="30" r="12"></circle>',
+      location: '<path class="illo-blue-soft" d="M34 84l46-18 58 18 48-18v28l-48 18-58-18-46 18z"></path><path class="illo-line-blue" d="M110 88s35-29 35-57a35 35 0 1 0-70 0c0 28 35 57 35 57z"></path><circle class="illo-red" cx="110" cy="31" r="11"></circle><path class="illo-line" d="M80 66v28M138 84V66"></path>',
+      menu: '<circle class="illo-yellow-soft" cx="110" cy="55" r="43"></circle><circle class="illo-bg" cx="110" cy="58" r="31"></circle><circle class="illo-line-red" cx="110" cy="58" r="20"></circle><path class="illo-line" d="M54 24v58M44 24v32a10 10 0 0 0 20 0V24M166 25v60"></path><rect class="illo-blue" x="158" y="24" width="18" height="38" rx="8"></rect>',
+      light: '<circle class="illo-yellow" cx="83" cy="42" r="18"></circle><path class="illo-line-yellow" d="M83 12v10M83 62v10M53 42h10M103 42h10M61 20l7 7M105 20l-7 7"></path><rect class="illo-bg" x="118" y="27" width="52" height="62" rx="12"></rect><path class="illo-line-blue" d="M130 41h28M130 55h22M130 69h30"></path>',
+      filming: '<rect class="illo-bg" x="45" y="30" width="76" height="50" rx="12"></rect><path class="illo-line" d="M56 80h54M64 92h38"></path><path class="illo-line-blue" d="M120 48l38-18v50l-38-18z"></path><circle class="illo-red" cx="69" cy="48" r="7"></circle><path class="illo-line-green" d="M55 102c30-12 78-12 112 0"></path>',
+      sound: '<rect class="illo-blue-soft" x="39" y="39" width="42" height="32" rx="10"></rect><path class="illo-line-blue" d="M78 44l37-25v72L78 66z"></path><path class="illo-line-red" d="M132 39a24 24 0 0 1 0 32M151 27a45 45 0 0 1 0 56"></path>',
+      caption: '<rect class="illo-bg" x="38" y="23" width="144" height="72" rx="14"></rect><path class="illo-line" d="M62 43h96M62 60h70M62 77h48"></path><rect class="illo-red" x="128" y="67" width="38" height="16" rx="8"></rect>',
+      hashtag: '<circle class="illo-blue-soft" cx="70" cy="48" r="28"></circle><path class="illo-line-blue" d="M88 22L75 94M135 22l-13 72M50 44h120M45 72h120"></path><circle class="illo-yellow" cx="154" cy="32" r="11"></circle>',
+      music: '<circle class="illo-red-soft" cx="120" cy="58" r="44"></circle><path class="illo-line" d="M97 76V26l62-12v50"></path><circle class="illo-blue" cx="82" cy="76" r="15"></circle><circle class="illo-red" cx="144" cy="64" r="15"></circle>',
+      template: '<rect class="illo-bg" x="40" y="28" width="54" height="54" rx="12"></rect><rect class="illo-blue-soft" x="106" y="28" width="54" height="54" rx="12"></rect><path class="illo-line-blue" d="M67 28v-9h28v28h-9a12 12 0 1 1 0 24h9v11"></path><path class="illo-line-red" d="M133 28v54M106 55h54"></path>',
+      media: '<rect class="illo-bg" x="36" y="24" width="148" height="76" rx="16"></rect><circle class="illo-yellow" cx="76" cy="52" r="13"></circle><path class="illo-line-blue" d="M42 88l41-31 29 23 19-17 45 34"></path><rect class="illo-red" x="136" y="34" width="28" height="20" rx="6"></rect>',
+      launch: '<path class="illo-blue-soft" d="M41 94c28-23 68-33 118-29 13 1 24 8 30 20H41z"></path><path class="illo-line-red" d="M96 78c5-26 28-48 72-61 0 0-8 37-36 60-15 12-36 18-36 18z"></path><circle class="illo-yellow" cx="137" cy="47" r="9"></circle><path class="illo-line-blue" d="M93 83l-21 21M127 80l18 22"></path>',
+      deal: '<circle class="illo-green-soft" cx="76" cy="52" r="30"></circle><circle class="illo-blue-soft" cx="144" cy="52" r="30"></circle><path class="illo-line" d="M47 59l30-27 32 32M173 59l-30-27-32 32"></path><path class="illo-line-green" d="M85 64l20 20a17 17 0 0 0 24 0l20-20"></path>',
+      brief: '<rect class="illo-bg" x="55" y="18" width="110" height="82" rx="14"></rect><path class="illo-line" d="M82 40h56M82 58h56M82 76h32"></path><path class="illo-line-green" d="M64 41l8 8 15-17M64 59l8 8 15-17"></path>',
+      analytics: '<rect class="illo-bg" x="37" y="26" width="146" height="78" rx="15"></rect><path class="illo-line" d="M58 86h104M67 76V56M100 76V42M133 76V50M162 76V34"></path><path class="illo-line-red" d="M61 38l39 20 32-24 35 13"></path>',
+      target: '<circle class="illo-blue-soft" cx="94" cy="58" r="43"></circle><circle class="illo-line-blue" cx="94" cy="58" r="35"></circle><circle class="illo-line-red" cx="94" cy="58" r="20"></circle><circle class="illo-red" cx="94" cy="58" r="7"></circle><path class="illo-line" d="M132 37l38-18-10 28-28 10zM122 47l32-18"></path>',
+      local: '<path class="illo-green-soft" d="M40 91c25-25 68-28 95-8 19 14 32 5 45-11v34H40z"></path><path class="illo-line-blue" d="M77 78s24-21 24-42a24 24 0 1 0-48 0c0 21 24 42 24 42z"></path><circle class="illo-red" cx="77" cy="36" r="8"></circle><path class="illo-line" d="M124 44h42M124 62h30"></path>',
+      money: '<rect class="illo-bg" x="38" y="38" width="144" height="54" rx="13"></rect><circle class="illo-green" cx="110" cy="65" r="17"></circle><path class="illo-line" d="M110 53v24M101 59h17a8 8 0 0 1 0 16H99"></path><path class="illo-line-red" d="M54 28h56M73 18h56"></path>',
+      calendarFood: '<rect class="illo-bg" x="40" y="20" width="140" height="82" rx="14"></rect><path class="illo-line-blue" d="M40 45h140M76 20v16M144 20v16"></path><circle class="illo-yellow-soft" cx="110" cy="72" r="21"></circle><path class="illo-line-red" d="M96 72h28M110 58v28"></path>',
+      calendarBehind: '<rect class="illo-bg" x="40" y="20" width="140" height="82" rx="14"></rect><path class="illo-line-blue" d="M40 45h140M76 20v16M144 20v16"></path><rect class="illo-red-soft" x="83" y="58" width="54" height="28" rx="8"></rect><path class="illo-line-red" d="M99 58l-8 28M121 58l8 28"></path>',
+      calendarReview: '<rect class="illo-bg" x="40" y="20" width="140" height="82" rx="14"></rect><path class="illo-line-blue" d="M40 45h140M76 20v16M144 20v16"></path><path class="illo-line-yellow" d="M110 57l6 12 13 2-10 9 2 13-11-6-11 6 2-13-10-9 13-2z"></path>',
+      calendarPromo: '<rect class="illo-bg" x="40" y="20" width="140" height="82" rx="14"></rect><path class="illo-line-blue" d="M40 45h140M76 20v16M144 20v16"></path><rect class="illo-green-soft" x="82" y="59" width="56" height="28" rx="8"></rect><path class="illo-line-green" d="M82 73h56M110 59v28"></path>'
+    };
+    function drawPresentationIllustrations() {
+      document.querySelectorAll('[data-illo]').forEach(el => {
+        const name = el.getAttribute('data-illo');
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 220 120');
+        svg.setAttribute('aria-hidden', 'true');
+        svg.classList.add('illo-svg');
+        svg.innerHTML = illustrationSet[name] || illustrationSet.target;
+        el.textContent = '';
+        el.setAttribute('aria-hidden', 'true');
+        el.appendChild(svg);
+      });
+    }
+    function miniIllustrationScene(name) {
+      const icon = iconSet[name] || iconSet.target;
+      const food = ['food', 'plate', 'pan'];
+      const local = ['place', 'map', 'walk', 'compass', 'store', 'search'];
+      const media = ['video', 'behind', 'live', 'scissors', 'sliders', 'play', 'caption', 'sound', 'mobile', 'phone'];
+      const people = ['family', 'person', 'voice', 'chat', 'ask', 'star'];
+      const growth = ['target', 'ads', 'boost', 'rocket', 'budget', 'chart', 'growth', 'eye', 'dice'];
+      const promo = ['gift', 'tag', 'clock', 'receipt', 'megaphone', 'checklist', 'trend'];
+      let scene = '<rect class="mini-card" x="8" y="8" width="104" height="64" rx="18"></rect><circle class="mini-soft" cx="25" cy="24" r="16"></circle><circle class="mini-soft" cx="94" cy="58" r="20"></circle>';
+      if (food.includes(name)) {
+        scene += '<circle class="mini-soft" cx="46" cy="42" r="23"></circle><path class="mini-navy" d="M24 59c23 12 51 12 75 0"></path><path class="mini-line" d="M31 44h58"></path>';
+      } else if (local.includes(name)) {
+        scene += '<path class="mini-soft" d="M18 54l28-12 32 12 25-12v20L78 74 46 62 18 74z"></path><path class="mini-line" d="M82 57s14-13 14-27a14 14 0 1 0-28 0c0 14 14 27 14 27z"></path>';
+      } else if (media.includes(name)) {
+        scene += '<rect class="mini-soft" x="22" y="23" width="58" height="34" rx="10"></rect><path class="mini-line" d="M80 34l23-12v34L80 44z"></path><path class="mini-navy" d="M26 64h72"></path>';
+      } else if (people.includes(name)) {
+        scene += '<circle class="mini-soft" cx="42" cy="33" r="16"></circle><circle class="mini-soft" cx="78" cy="33" r="16"></circle><path class="mini-line" d="M27 62c8-17 30-17 38 0M65 62c8-17 30-17 38 0"></path>';
+      } else if (growth.includes(name)) {
+        scene += '<rect class="mini-soft" x="24" y="23" width="72" height="42" rx="11"></rect><path class="mini-navy" d="M33 55h54"></path><path class="mini-line" d="M34 51l17-16 13 11 25-24"></path>';
+      } else if (promo.includes(name)) {
+        scene += '<rect class="mini-soft" x="26" y="28" width="68" height="36" rx="10"></rect><path class="mini-line" d="M26 46h68M60 28v36"></path><circle class="mini-accent" cx="94" cy="24" r="8"></circle>';
+      }
+      return `${scene}<g class="mini-icon" transform="translate(73 25) scale(1.55)">${icon}</g>`;
+    }
+    function drawCardIllustrations() {
+      document.querySelectorAll('[data-card-illo]').forEach(el => {
+        const name = el.getAttribute('data-card-illo');
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 120 80');
+        svg.setAttribute('aria-hidden', 'true');
+        svg.classList.add('mini-illo-svg');
+        svg.innerHTML = miniIllustrationScene(name);
+        el.textContent = '';
+        el.setAttribute('aria-hidden', 'true');
+        el.appendChild(svg);
+      });
+    }
+    function drawPresentationIcons() {
+      document.querySelectorAll('[data-icon]').forEach(el => {
+        const name = el.getAttribute('data-icon');
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('aria-hidden', 'true');
+        svg.classList.add('icon-svg');
+        svg.innerHTML = iconSet[name] || iconSet.target;
+        el.textContent = '';
+        el.setAttribute('aria-hidden', 'true');
+        el.appendChild(svg);
+      });
+    }
+    drawPresentationIllustrations();
+    drawCardIllustrations();
+    drawPresentationIcons();
+
+    const slides = [...document.querySelectorAll('.slide')];
+    const counter = document.getElementById('counter');
+    const bar = document.getElementById('bar');
+    const fullscreenToggle = document.getElementById('fullscreenToggle');
+    const pointerToggle = document.getElementById('pointerToggle');
+    const presentationPointer = document.getElementById('presentationPointer');
+    let index = 0, pointerEnabled = false, pointerTimer;
+
+    slides.forEach((slide, i) => {
+      const c = slide.querySelector('.content');
+      if (c) c.setAttribute('data-slide-number', String(i + 1).padStart(2, '0'));
+    });
+
+    function showSlide(n) {
+      index = Math.max(0, Math.min(slides.length - 1, n));
+      slides.forEach((s, i) => s.classList.toggle('active', i === index));
+      counter.textContent = (index + 1) + ' / ' + slides.length;
+      if (bar) bar.style.width = (((index + 1) / slides.length) * 100) + '%';
+      window.location.hash = 'slide-' + (index + 1);
+    }
+    document.getElementById('prev').addEventListener('click', () => showSlide(index - 1));
+    document.getElementById('next').addEventListener('click', () => showSlide(index + 1));
+
+    function isFullscreen() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+    function toggleFullscreen() {
+      if (isFullscreen()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      else (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen).call(document.documentElement);
+    }
+    function updateFs() { fullscreenToggle?.classList.toggle('is-active', isFullscreen()); }
+    fullscreenToggle?.addEventListener('click', toggleFullscreen);
+    document.addEventListener('fullscreenchange', updateFs);
+
+    function setPointerEnabled(state) {
+      pointerEnabled = state;
+      document.body.classList.toggle('pointer-on', state);
+      pointerToggle?.classList.toggle('is-active', state);
+      if (!state) presentationPointer?.classList.remove('visible');
+    }
+    pointerToggle?.addEventListener('click', () => setPointerEnabled(!pointerEnabled));
+    document.addEventListener('mousemove', (e) => {
+      if (!pointerEnabled) return;
+      presentationPointer.style.left = e.clientX + 'px';
+      presentationPointer.style.top = e.clientY + 'px';
+      presentationPointer.classList.add('visible');
+      clearTimeout(pointerTimer);
+      pointerTimer = setTimeout(() => presentationPointer.classList.remove('visible'), 1400);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      const tag = (event.target && event.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (['ArrowRight', 'PageDown', ' '].includes(event.key)) { event.preventDefault(); showSlide(index + 1); }
+      if (['ArrowLeft', 'PageUp'].includes(event.key)) { event.preventDefault(); showSlide(index - 1); }
+      if (event.key === 'Home') showSlide(0);
+      if (event.key === 'End') showSlide(slides.length - 1);
+      if (event.key === 'f' || event.key === 'F') { event.preventDefault(); toggleFullscreen(); }
+      if (event.key === 'p' || event.key === 'P') { event.preventDefault(); setPointerEnabled(!pointerEnabled); }
+    });
+
+    const hashMatch = window.location.hash.match(/slide-(\d+)/);
+    if (hashMatch) showSlide(Number(hashMatch[1]) - 1);
+    else showSlide(0);
+
+    /* ===== Video Lightbox (กดคลิป → เด้งเต็มจอ) ===== */
+    (function(){
+      const lb = document.getElementById('vlightbox');
+      const host = document.getElementById('vlbHost');
+      if(!lb || !host) return;
+      function close(){
+        lb.classList.remove('open');
+        host.innerHTML = '';
+        document.body.style.overflow = '';
+      }
+      function openVideo(src){
+        host.innerHTML = '';
+        const v = document.createElement('video');
+        v.src = src; v.controls = true; v.autoplay = true; v.playsInline = true;
+        host.appendChild(v);
+        lb.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        // พยายามขอ fullscreen จริงของวิดีโอ (ถ้าเบราว์เซอร์อนุญาต)
+        const fs = v.requestFullscreen || v.webkitRequestFullscreen || v.webkitEnterFullscreen;
+        v.addEventListener('loadedmetadata', () => { try { fs && fs.call(v); } catch(e){} }, { once:true });
+      }
+      function openImg(src){
+        host.innerHTML = '';
+        const im = document.createElement('img'); im.src = src;
+        host.appendChild(im);
+        lb.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      document.querySelectorAll('.vidcard .vwrap').forEach(w => {
+        w.addEventListener('click', () => {
+          const srcEl = w.querySelector('video source');
+          const img = w.querySelector('img');
+          if (srcEl) openVideo(srcEl.getAttribute('src'));
+          else if (img) openImg(img.getAttribute('src'));
+        });
+      });
+      document.getElementById('vlbClose').addEventListener('click', close);
+      lb.addEventListener('click', e => { if (e.target === lb) close(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && lb.classList.contains('open')) close(); });
+      // เอา controls ออกจากตัวพรีวิวในการ์ด (กดที่การ์ดเพื่อเปิดเต็มจอแทน)
+      document.querySelectorAll('.vidcard video').forEach(v => v.removeAttribute('controls'));
+    })();
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
